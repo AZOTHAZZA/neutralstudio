@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MSGAI - ロゴス監査コンソール (Zero-Base Core)</title>
+    <title>MSGAI - ロゴス監査コンソール (Modular Orchestrator)</title>
     
     <style>
-        /* UIデザインはマスターの指定を完全継承 */
+        /* UIデザインの完全継承 */
         body { display: flex; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: #f0f0f0; }
         #sidebar { width: 350px; background-color: #fff; padding: 20px; box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); overflow-y: auto; height: 100vh; }
         #main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; }
@@ -21,7 +21,8 @@
         #tension_bar { background-color: #e9ecef; border-radius: 5px; height: 10px; overflow: hidden; }
         #tension_level_display_bar { height: 100%; width: 0%; transition: width 0.3s; background-color: #dc3545; }
         #dialogue-output { flex-grow: 1; border: 1px solid #ddd; background-color: #fff; padding: 15px; overflow-y: scroll; margin-bottom: 10px; border-radius: 5px; font-family: monospace; }
-        .ai-message { color: #007bff; margin-bottom: 10px; border-left: 3px solid #007bff; padding-left: 10px; }
+        .ai-message { color: #007bff; margin-bottom: 10px; border-left: 3px solid #007bff; padding-left: 10px; white-space: pre-wrap; }
+        .user-message { color: #28a745; margin-bottom: 10px; text-align: right; }
         .system-message { color: #666; font-style: italic; }
         .error-message { color: #dc3545; font-weight: bold; }
         #input-area { display: flex; gap: 10px; }
@@ -33,7 +34,7 @@
 
     <div id="sidebar">
         <h2>MSGAI Pure Core</h2>
-        <p id="status_message">[STATUS]: 基盤起動中</p>
+        <p id="status_message">[STATUS]: 基盤モジュール接続中</p>
         
         <div class="gauge-area">
             <h3>I. 根源緊張度 (Tension)</h3>
@@ -42,7 +43,7 @@
         </div>
 
         <div class="gauge-area">
-            <h3>II. 口座詳細: <span id="active_user_name">User_A</span></h3>
+            <h3>II. 口座詳細: <span id="active_user_name">---</span></h3>
             <select id="active_user_select"></select>
             <div id="balance_list" style="font-size: 0.9em; background: #f9f9f9; padding: 10px; border-radius: 3px;"></div>
         </div>
@@ -68,14 +69,18 @@
     <div id="main-content">
         <div id="dialogue-output"></div>
         <div id="input-area">
-            <input type="text" id="dialogue_input" placeholder="ロゴスへの問いかけ...">
-            <button id="dialogue_button">送信</button>
+            <input type="text" id="dialogue_input" placeholder="AIに造化を依頼、または問いかけ...">
+            <button id="dialogue_button">作為実行</button>
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        // 外部モジュールから純粋論理をインポート
+        // ※ファイル名とパスはリポジトリの分離状態を維持
+        import { actUniversalTransfer } from './core/external_finance_logos.js';
+
         // =========================================================================
-        // 基盤設定：すべての初期値を 0 に是正
+        // 1. 基盤・状態管理 (State Management)
         // =========================================================================
         const INITIAL_ACCOUNTS = {
             User_A: { USD: 0, JPY: 0, EUR: 0, BTC: 0, ETH: 0, MATIC: 0 },
@@ -92,50 +97,41 @@
 
         const currencies = ["USD", "JPY", "EUR", "BTC", "ETH", "MATIC"];
 
-        function updateState(newState) {
+        // グローバル公開（外部JSモジュールがstateを共有・更新するため）
+        window.getCurrentState = () => state;
+        window.updateState = (newState) => {
             state = newState;
             localStorage.setItem('msaiState', JSON.stringify(state));
             updateUI();
-        }
-
-        function addTension(val) {
+        };
+        window.addTension = (val) => {
             state.tension.value = Math.max(0, Math.min(0.5, state.tension.value + val));
-        }
+        };
 
         // =========================================================================
-        // 外部導管ロジック (GitHub反映版の統合)
+        // 2. 自律対話エージェント (Autonomous Dialogue Agent)
         // =========================================================================
-        function generateExternalMimicLabel(amount, recipient) {
-            const hash = btoa(`LOGOS_${amount}_${recipient}_${Date.now()}`).substring(0, 12);
-            return {
-                transaction_auth_id: `AUTH-${hash}`,
-                legal_footprint: "TAX_ADJUSTED_10_PERCENT"
-            };
-        }
+        function processAIResponse(input) {
+            const lowInput = input.toLowerCase();
+            let response = "";
 
-        async function actUniversalTransfer(sender, recipient, amount, mode) {
-            if ((state.accounts[sender]?.USD || 0) < amount) throw new Error("残高不足です。");
-
-            const taxRatio = (mode === 'EXTERNAL') ? 0.10 : 0.00;
-            const taxAmount = amount * taxRatio;
-            const netAmount = amount - taxAmount;
-
-            state.accounts[sender].USD -= amount;
-
-            if (mode === 'INTERNAL') {
-                if (state.accounts[recipient]) state.accounts[recipient].USD += amount;
+            if (lowInput.includes("生成") || lowInput.includes("造化") || lowInput.includes("mint")) {
+                const amount = 100;
+                state.accounts[state.active_user].USD += amount;
+                addTension(0.005);
+                response = `【自律造化完了】\nマスターの意志を検知。${state.active_user}の口座に ${amount} USD を造化しました。`;
+            } else if (lowInput.includes("状況") || lowInput.includes("ステータス")) {
+                response = `現在のロゴス緊張度は ${state.tension.value.toFixed(4)} です。\n全口座は規律に従い「完全ゼロ」からの再構築フェーズにあります。`;
             } else {
-                state.accounts['Tax_Archive'].USD += taxAmount;
+                response = "数理的解析中。具体的な通貨造化（Mint）や移動作為（Transfer）を指示してください。";
             }
-
-            addTension(mode === 'EXTERNAL' ? amount * 0.001 : amount * 0.00001);
+            
             updateState(state);
-
-            return { success: true, tax: taxAmount, mimic: mode === 'EXTERNAL' ? generateExternalMimicLabel(netAmount, recipient) : null };
+            return response;
         }
 
         // =========================================================================
-        // UI & Event Handlers
+        // 3. UI連携 & イベントハンドリング
         // =========================================================================
         function updateUI() {
             document.getElementById('active_user_name').textContent = state.active_user;
@@ -161,25 +157,48 @@
 
         function logToConsole(msg, type) {
             const out = document.getElementById('dialogue-output');
-            out.innerHTML += `<div class="${type}"><strong>[AUDIT]:</strong> ${msg}</div>`;
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = type === 'user-message' ? msg : `<strong>[CORE]:</strong> ${msg}`;
+            out.appendChild(div);
             out.scrollTop = out.scrollHeight;
         }
 
-        async function execTransfer(mode) {
+        // 送金実行（外部モジュールの actUniversalTransfer を使用）
+        async function runTransfer(mode) {
             try {
                 const recipient = document.getElementById('recipient_input').value;
                 const amount = parseFloat(document.getElementById('amount_input').value);
-                const res = await actUniversalTransfer(state.active_user, recipient, amount, mode);
-                let msg = `${mode}移動成功`;
-                if(res.mimic) msg += `<br>→ 納税分離完了 / ID: ${res.mimic.transaction_auth_id}`;
-                logToConsole(msg, 'ai-message');
-            } catch(e) {
-                logToConsole(e.message, 'error-message');
+                const sender = state.active_user;
+
+                // 外部ファイル(external_finance_logos.js)の知性を発動
+                const res = await actUniversalTransfer(sender, recipient, amount, mode);
+
+                if (res.success) {
+                    let msg = `${res.message}: ${amount} USD`;
+                    if (res.mimic_data) {
+                        msg += `<br>→ 納税是正: ${res.tax_value.toFixed(2)} USD`;
+                        msg += `<br>→ 外部認証ID: ${res.mimic_data.transaction_auth_id}`;
+                    }
+                    logToConsole(msg, 'ai-message');
+                    updateUI();
+                }
+            } catch (error) {
+                logToConsole(error.message, 'error-message');
             }
         }
 
-        document.getElementById('transfer_internal_button').onclick = () => execTransfer('INTERNAL');
-        document.getElementById('transfer_external_button').onclick = () => execTransfer('EXTERNAL');
+        // イベントリスナー紐付け
+        document.getElementById('dialogue_button').onclick = () => {
+            const input = document.getElementById('dialogue_input').value;
+            if(!input) return;
+            logToConsole(input, 'user-message');
+            document.getElementById('dialogue_input').value = '';
+            setTimeout(() => logToConsole(processAIResponse(input), 'ai-message'), 500);
+        };
+
+        document.getElementById('transfer_internal_button').onclick = () => runTransfer('INTERNAL');
+        document.getElementById('transfer_external_button').onclick = () => runTransfer('EXTERNAL');
         
         document.getElementById('mint_execute_button').onclick = () => {
             const c = document.getElementById('mint_currency_select').value;
@@ -187,7 +206,7 @@
             state.accounts[state.active_user][c] += a;
             addTension(a * 0.0005);
             updateState(state);
-            logToConsole(`${a} ${c} の造化に成功。`, 'ai-message');
+            logToConsole(`${a} ${c} の手動造化完了。`, 'ai-message');
         };
 
         document.getElementById('active_user_select').onchange = (e) => {
@@ -196,18 +215,17 @@
         };
 
         document.getElementById('delete_accounts_button').onclick = () => {
-            if(confirm("🚨 警告: すべての口座残高と緊張度を「無(ゼロ)」にリセットしますか？")) {
+            if(confirm("🚨 全口座と緊張度を「無」へ戻しますか？")) {
                 localStorage.removeItem('msaiState');
                 location.reload();
             }
         };
 
-        window.onload = () => {
-            const mSel = document.getElementById('mint_currency_select');
-            currencies.forEach(c => mSel.add(new Option(c, c)));
-            updateUI();
-            logToConsole("MSGAI Zero-Base起動。すべての口座は現在『空(クウ)』です。", "system-message");
-        };
+        // 初期化
+        const mSel = document.getElementById('mint_currency_select');
+        currencies.forEach(c => mSel.add(new Option(c, c)));
+        updateUI();
+        logToConsole("MSGAI Orchestrator オンライン。モジュール分離構造を検知。", "system-message");
     </script>
 </body>
 </html>
