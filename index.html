@@ -3,262 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MSGAI - ロゴス監査コンソール (V21.2)</title>
+    <title>MSGAI - ロゴス監査コンソール (V22.0)</title>
     <style>
-        /* 根本的な視認性向上とレイアウトの安定化 */
-        body { display: flex; font-family: 'Segoe UI', 'BIZ UDゴシック', sans-serif; margin: 0; background-color: #f4f4f4; color: #333; height: 100vh; overflow: hidden; }
+        body { display: flex; font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f0f0f0; color: #333; height: 100vh; overflow: hidden; }
         
-        /* サイドバー：機能を詰め込んでも崩れない幅を死守 */
+        /* サイドバー：タブシステム導入 */
         #sidebar { 
-            width: 480px; 
-            min-width: 480px;
-            background-color: #ffffff; 
-            padding: 20px; 
-            box-shadow: 3px 0 15px rgba(0,0,0,0.1); 
-            overflow-y: scroll; 
-            height: 100vh; 
-            box-sizing: border-box; 
-            z-index: 10;
-            border-right: 2px solid #ddd;
-        }
-
-        #main-content { 
-            flex-grow: 1; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            box-sizing: border-box; 
-            background-color: #e9ecef;
-        }
-
-        /* セクション：情報の境界を明確化 */
-        .gauge-area { 
-            border: 1px solid #ced4da; 
-            padding: 20px; 
-            margin-bottom: 20px; 
-            border-radius: 10px; 
+            width: 380px; 
             background-color: #fff; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .gauge-area h3 { 
-            margin: -20px -20px 15px -20px; 
-            font-size: 1.1em; 
-            background: #f8f9fa; 
-            padding: 10px 20px; 
-            border-bottom: 1px solid #dee2e6; 
-            border-radius: 10px 10px 0 0;
-            color: #007bff;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1); 
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            height: 100vh;
         }
 
-        /* 入力エリアの崩れを防止 */
-        .control-group { margin-bottom: 12px; }
+        /* タブメニュー */
+        .tab-menu { display: flex; background: #222; color: #fff; }
+        .tab-btn { 
+            flex: 1; padding: 12px 5px; cursor: pointer; border: none; background: none; 
+            color: #aaa; font-size: 0.75em; font-weight: bold; text-align: center;
+            transition: all 0.3s; border-bottom: 3px solid transparent;
+        }
+        .tab-btn.active { color: #fff; border-bottom: 3px solid #007bff; background: #333; }
+
+        /* コンテンツエリア */
+        #tab-content { flex-grow: 1; padding: 20px; overflow-y: auto; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .gauge-area { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px; background-color: #fff; }
+        .gauge-area h3 { margin: 0 0 10px 0; font-size: 1em; border-bottom: 1px solid #eee; padding-bottom: 5px; color: #007bff; }
+        
+        .control-group { margin-bottom: 10px; }
         .control-group label { display: block; font-weight: bold; font-size: 0.8em; color: #666; margin-bottom: 4px; }
-        
-        input[type="number"], input[type="text"], select { 
-            width: 100%; 
-            padding: 10px; 
-            border: 1px solid #adb5bd; 
-            border-radius: 5px; 
-            font-family: 'Consolas', monospace; 
-            font-size: 1em;
-            box-sizing: border-box;
-        }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: monospace; }
 
-        /* ボタン：操作ミスを防ぐサイズ感 */
         .action-button { 
-            width: 100%; 
-            padding: 12px; 
-            border: none; 
-            border-radius: 6px; 
-            color: white; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 1em;
-            margin-top: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 100%; padding: 10px; border: none; border-radius: 4px; color: white; 
+            cursor: pointer; font-weight: bold; margin-top: 5px; 
         }
+        .btn-blue { background: #007bff; }
+        .btn-orange { background: #fd7e14; }
+        .btn-green { background: #00cc99; }
         
-        .action-internal { background: linear-gradient(to bottom, #007bff, #0056b3); }
-        #arche_flow_button { background: linear-gradient(to bottom, #00cc99, #009977); color: #fff; }
-        #silent_mode_button { background: #4b0082; }
-
-        /* 自動化トグル：独立したエリアとして視認 */
-        .auto-status-box { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between;
-            background: #e7f1ff; 
-            padding: 10px 15px; 
-            border-radius: 6px; 
-            margin-top: 10px; 
-            border: 1px solid #b6d4fe;
+        .auto-box { 
+            display: flex; align-items: center; justify-content: space-between;
+            background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 8px; border: 1px solid #dee2e6;
         }
-        .auto-status-box label { font-weight: bold; color: #084298; font-size: 0.9em; cursor: pointer; }
-        .auto-status-box input[type="checkbox"] { transform: scale(1.5); cursor: pointer; }
+        .auto-box label { font-size: 0.8em; margin: 0; cursor: pointer; font-weight: bold; }
 
-        /* ログ出力エリア */
-        #dialogue-output { 
-            flex-grow: 1; 
-            border: 2px solid #dee2e6; 
-            background-color: #fff; 
-            padding: 20px; 
-            overflow-y: scroll; 
-            border-radius: 12px; 
-            font-family: 'Consolas', 'Courier New', monospace;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
-        }
+        /* メインコンテンツ（ログ） */
+        #main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; background-color: #e9ecef; }
+        #dialogue-output { flex-grow: 1; border: 1px solid #ddd; background-color: #fff; padding: 15px; overflow-y: scroll; border-radius: 8px; font-family: monospace; }
         
-        .ai-message { color: #0056b3; background: #f0f7ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #0056b3; line-height: 1.6; }
-        .system-message { color: #555; background: #eee; text-align: center; font-size: 0.8em; padding: 5px; margin-bottom: 10px; border-radius: 4px; }
+        .ai-message { color: #007bff; background: #f0f7ff; padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 4px solid #007bff; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
     <div id="sidebar">
-        <h2 style="margin-top:0; color:#222; border-bottom: 3px solid #007bff; padding-bottom: 10px;">LOGOS AUDIT V21.2</h2>
+        <div style="padding: 15px; background: #111; color: #fff; text-align: center; font-weight: bold;">MSGAI CORE V22</div>
         
-        <div class="gauge-area">
-            <h3>I. 根源緊張度 <span>w=1/z</span></h3>
-            <div style="display:flex; justify-content:space-between; align-items: baseline;">
-                <span id="tension_val" style="font-size: 1.8em; font-weight: bold; font-family: monospace;">0.000000</span>
-                <span id="logos_val" style="font-size: 1.1em; color: #666;">w: 0.00</span>
-            </div>
-            <div style="background:#eee; height:12px; border-radius:6px; margin-top:10px; overflow:hidden; border:1px solid #ccc;">
-                <div id="tension_bar" style="width:0%; height:100%; background:linear-gradient(90deg, #28a745, #dc3545); transition: width 0.3s;"></div>
-            </div>
+        <div class="tab-menu">
+            <button class="tab-btn active" onclick="openTab('monitor')">監視</button>
+            <button class="tab-btn" onclick="openTab('flow')">循環</button>
+            <button class="tab-btn" onclick="openTab('mint')">造化</button>
+            <button class="tab-btn" onclick="openTab('sys')">設定</button>
         </div>
 
-        <div class="gauge-area">
-            <h3>II. 監査対象: <span id="user_name">---</span></h3>
-            <div class="control-group">
-                <label>対象ユーザー</label>
-                <select id="user_select"></select>
+        <div id="tab-content">
+            <div id="monitor" class="tab-pane active">
+                <div class="gauge-area">
+                    <h3>I. 根源緊張度</h3>
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-family:monospace;">
+                        <span id="t_val">T: 0.000000</span>
+                        <span id="w_val" style="color:#888;">w: 0.00</span>
+                    </div>
+                    <div style="background:#eee; height:8px; border-radius:4px; margin-top:5px; overflow:hidden;"><div id="t_bar" style="width:0%; height:100%; background:#dc3545;"></div></div>
+                </div>
+                <div class="gauge-area">
+                    <h3>II. 口座残高 (<span id="u_name">---</span>)</h3>
+                    <select id="u_select" style="margin-bottom:10px;"></select>
+                    <div id="bal_list" style="font-size:0.9em; line-height:1.6; font-family:monospace;"></div>
+                </div>
             </div>
-            <div id="balance_display" style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #dee2e6; font-family:monospace; line-height:1.8; font-size:1.1em;"></div>
-        </div>
 
-        <div class="gauge-area">
-            <h3>III. 移動・循環</h3>
-            <div class="control-group">
-                <label>受取ユーザー</label>
-                <input type="text" id="rx_input" value="User_B">
+            <div id="flow" class="tab-pane">
+                <div class="gauge-area">
+                    <h3>III. 移動・循環作為</h3>
+                    <div class="control-group"><label>受取人</label><input type="text" id="rx_in" value="User_B"></div>
+                    <div class="control-group"><label>数量 (USD)</label><input type="number" id="amt_in" value="10.00"></div>
+                    <button id="tx_btn" class="action-button btn-blue">内部循環実行</button>
+                    <div class="auto-box"><label>自動循環 ON</label><input type="checkbox" id="auto_tx"></div>
+                </div>
+                <div class="gauge-area">
+                    <h3>V. 自律流 (Arche-Flow)</h3>
+                    <select id="a_cur" style="margin-bottom:10px;"></select>
+                    <input type="number" id="a_int" value="1.0" step="0.1">
+                    <button id="a_btn" class="action-button btn-green">TOGGLE FLOW</button>
+                </div>
             </div>
-            <div class="control-group">
-                <label>数量 (USD)</label>
-                <input type="number" id="amt_input" value="10.00">
+
+            <div id="mint" class="tab-pane">
+                <div class="gauge-area">
+                    <h3>IV. 通貨造化 (Minting)</h3>
+                    <div class="control-group"><label>数量</label><input type="number" id="m_amt" value="100"></div>
+                    <div class="control-group"><label>対象通貨</label><select id="m_cur"></select></div>
+                    <button id="m_btn" class="action-button btn-orange">造化実行</button>
+                    <div class="auto-box"><label>自動造化 ON</label><input type="checkbox" id="auto_m"></div>
+                </div>
             </div>
-            <button id="tx_btn" class="action-button action-internal">内部循環を手動実行</button>
-            <div class="auto-status-box">
-                <label for="auto_tx">自動循環 (z緩和) ON</label>
-                <input type="checkbox" id="auto_tx">
+
+            <div id="sys" class="tab-pane">
+                <div class="gauge-area">
+                    <h3>System</h3>
+                    <button id="reset_btn" class="action-button" style="background:#6c757d;">完全リセット</button>
+                </div>
             </div>
         </div>
-
-        <div class="gauge-area">
-            <h3>IV. 通貨造化</h3>
-            <div class="control-group">
-                <label>生成数量</label>
-                <input type="number" id="mint_amt" value="100">
-            </div>
-            <div class="control-group">
-                <label>対象通貨</label>
-                <select id="mint_cur"></select>
-            </div>
-            <button id="mint_btn" class="action-button" style="background:#fd7e14;">通貨造化を手動実行</button>
-            <div class="auto-status-box">
-                <label for="auto_mint">自動造化 (継続打出) ON</label>
-                <input type="checkbox" id="auto_mint">
-            </div>
-        </div>
-
-        <div class="gauge-area">
-            <h3>V. 自律流 (Arche-Flow)</h3>
-            <div class="control-group">
-                <label>対象アルケー</label>
-                <select id="arche_cur"></select>
-            </div>
-            <div class="control-group">
-                <label>強度 (Intensity)</label>
-                <input type="number" id="arche_int" value="1.0" step="0.1">
-            </div>
-            <button id="arche_btn" class="action-button">TOGGLE ARCHE-FLOW</button>
-            <p id="arche_stat" style="text-align:center; font-weight:bold; margin-top:10px; color:#888;">STATUS: STANDBY</p>
-        </div>
-
-        <button id="sys_reset" class="action-button" style="background:#6c757d; margin-top:20px;">システム全抹消</button>
     </div>
 
     <div id="main-content">
         <div id="dialogue-output"></div>
-        <div style="display:flex; gap:15px; padding-top:15px;">
-            <input type="text" id="chat_in" style="flex-grow:1; padding:15px; border-radius:10px; border:2px solid #dee2e6;" placeholder="アルケーへの問いかけ...">
-            <button id="chat_btn" class="action-button action-internal" style="width:140px; margin:0;">作為実行</button>
+        <div style="display:flex; gap:10px; padding-top:10px;">
+            <input type="text" id="c_in" style="flex-grow:1; padding:12px; border:1px solid #ccc; border-radius:5px;" placeholder="メッセージ...">
+            <button id="c_btn" class="action-button btn-blue" style="width:100px; margin:0;">実行</button>
         </div>
     </div>
 
-    <script type="module">
+    <script>
+        // タブ切り替えロジック
+        window.openTab = (name) => {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(name).classList.add('active');
+            event.currentTarget.classList.add('active');
+        };
+
         const PHI = 1.6180339887;
         const RATES = { USD: 1, JPY: 150, EUR: 0.92, BTC: 0.000015, ETH: 0.0004, MATIC: 1.4 };
         const curs = ["USD", "JPY", "EUR", "BTC", "ETH", "MATIC"];
 
-        let state = JSON.parse(localStorage.getItem('msgai_v21_2')) || {
+        let state = JSON.parse(localStorage.getItem('msgai_v22')) || {
             user: 'User_A',
             accounts: { User_A: { USD: 0, JPY: 0, EUR: 0, BTC: 0, ETH: 0, MATIC: 0 }, User_B: { USD: 0, JPY: 0, EUR: 0, BTC: 0, ETH: 0, MATIC: 0 } },
             tension: 0.0, autonomy: false, target: 'USD'
         };
 
         function updateUI() {
-            document.getElementById('user_name').textContent = state.user;
-            document.getElementById('tension_val').textContent = state.tension.toFixed(6);
-            document.getElementById('tension_bar').style.width = `${Math.min(100, state.tension * 200)}%`;
-            const w = 1 / (state.tension || 0.000001);
-            document.getElementById('logos_val').textContent = `w: ${w.toFixed(2)}`;
-
-            const disp = document.getElementById('balance_display');
-            disp.innerHTML = curs.map(c => `<div style="display:flex; justify-content:space-between;"><span>${c}</span><span>${(state.accounts[state.user][c] || 0).toFixed(c==='JPY'?0:8)}</span></div>`).join('');
-
-            const aStat = document.getElementById('arche_stat');
-            aStat.textContent = state.autonomy ? `▶ FLOWING: ${state.target}` : "■ STATUS: STANDBY";
-            aStat.style.color = state.autonomy ? "#00cc99" : "#888";
+            document.getElementById('u_name').textContent = state.user;
+            document.getElementById('t_val').textContent = `T: ${state.tension.toFixed(6)}`;
+            document.getElementById('t_bar').style.width = `${Math.min(100, state.tension * 200)}%`;
+            document.getElementById('w_val').textContent = `w: ${(1/(state.tension||0.000001)).toFixed(2)}`;
+            const disp = document.getElementById('bal_list');
+            disp.innerHTML = curs.map(c => `<div style="display:flex; justify-content:space-between;"><span>${c}</span><span>${(state.accounts[state.user][c]||0).toFixed(c==='JPY'?0:8)}</span></div>`).join('');
         }
 
         setInterval(() => {
             if (state.autonomy) {
-                const i = parseFloat(document.getElementById('arche_int').value) || 1.0;
+                const i = parseFloat(document.getElementById('a_int').value) || 1.0;
                 state.accounts.User_A[state.target] += (0.001 * PHI * i) * (state.target === 'JPY' ? 150 : 1/RATES[state.target]);
                 state.tension *= (1 - 0.002 * i);
             }
             if (document.getElementById('auto_tx').checked && state.tension > 0.1) {
                 state.accounts.User_A.USD -= 0.1; state.accounts.User_B.USD += 0.1; state.tension *= 0.99;
             }
-            if (document.getElementById('auto_mint').checked) {
+            if (document.getElementById('auto_m').checked) {
                 state.accounts.User_A[state.target] += 0.01; state.tension += 0.001;
             }
             updateUI();
-            localStorage.setItem('msgai_v21_2', JSON.stringify(state));
+            localStorage.setItem('msgai_v22', JSON.stringify(state));
         }, 500);
 
         document.addEventListener('DOMContentLoaded', () => {
             curs.forEach(c => {
-                document.getElementById('mint_cur').add(new Option(c, c));
-                document.getElementById('arche_cur').add(new Option(c, c));
+                document.getElementById('m_cur').add(new Option(c, c));
+                document.getElementById('a_cur').add(new Option(c, c));
             });
-            const uSel = document.getElementById('user_select');
-            ['User_A', 'User_B'].forEach(u => uSel.add(new Option(u, u)));
-            uSel.value = state.user;
-            uSel.onchange = (e) => { state.user = e.target.value; updateUI(); };
-
-            document.getElementById('arche_btn').onclick = () => {
-                state.autonomy = !state.autonomy;
-                state.target = document.getElementById('arche_cur').value;
-                updateUI();
-            };
-            
-            document.getElementById('sys_reset').onclick = () => { if(confirm("消去？")) { localStorage.clear(); location.reload(); } };
+            ['User_A', 'User_B'].forEach(u => document.getElementById('u_select').add(new Option(u, u)));
+            document.getElementById('u_select').onchange = (e) => { state.user = e.target.value; updateUI(); };
+            document.getElementById('a_btn').onclick = () => { state.autonomy = !state.autonomy; state.target = document.getElementById('a_cur').value; updateUI(); };
+            document.getElementById('reset_btn').onclick = () => { localStorage.clear(); location.reload(); };
             updateUI();
         });
     </script>
