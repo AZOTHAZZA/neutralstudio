@@ -1,33 +1,36 @@
-// core/currency.js (最終修正版 - 全文)
+/**
+ * core/currency.js
+ * [定義]: 通貨の流動と造化を司るモジュール。
+ * 全ての価値交換は「太陽の繁茂」の比率（EXCHANGE_RATES）を介して行われ、
+ * 生成（Minting）は太陽の出力（Solar Power）と同期する。
+ */
 
 import { 
     getCurrentState, 
     updateState, 
     getTensionInstance, 
-    addTension // 💡 修正: addTensionをインポート
+    addTension 
 } from './foundation.js';
 
-// 簡略化された静的な為替レート (USDに対する固定比率)
+import { solarAutonomy } from './Autonomy.js'; // 💡 太陽の源泉を接続
+
+// 宇宙の比率に基づく為替（便宜上のロゴス的換算比率）
 const EXCHANGE_RATES = {
-    JPY: 130, // 1 USD = 130 JPY
-    EUR: 0.9,  // 1 USD = 0.9 EUR
-    BTC: 0.00005, // 1 USD = 0.00005 BTC
-    ETH: 0.001, // 1 USD = 0.001 ETH
-    MATIC: 1.5, // 1 USD = 1.5 MATIC
+    JPY: 130, 
+    EUR: 0.9,  
+    BTC: 0.00005, 
+    ETH: 0.001, 
+    MATIC: 1.5, 
     USD: 1
 };
 
-
 // =========================================================================
-// 通貨生成 (Minting Act)
+// 4. 通貨生成 (Minting Act) - 「太陽の物質化」
 // =========================================================================
 
 /**
- * 通貨生成作為 (Minting Act) を実行し、残高とTensionを増やす。
- * @param {string} user - 通貨を生成するユーザー名
- * @param {string} currency - 生成する通貨コード
- * @param {number} amount - 生成する数量
- * @returns {object} 更新された状態 (newState)
+ * 通貨生成作為を実行。
+ * 太陽の繁茂（Autonomy）が活発であるほど、生成の摩擦（Tension）は打ち消される。
  */
 export function actMintCurrency(user, currency, amount) {
     const state = getCurrentState();
@@ -36,34 +39,31 @@ export function actMintCurrency(user, currency, amount) {
         throw new Error(`User ${user} not found.`);
     }
 
-    // 1. 残高の増加
-    state.accounts[user][currency] = (state.accounts[user][currency] || 0) + amount;
-
-    // 2. Tensionの計算と増加
-    // Mintingは大きな作為とみなし、Tension増加率は高めに設定
-    const usdEquivalent = amount / (EXCHANGE_RATES[currency] || 1);
-    const tensionIncrease = usdEquivalent * 0.005; 
+    // 1. 太陽の出力を取得し、生成量を加護する
+    const power = solarAutonomy.getPower();
     
-    // 💡 修正: tensionInstance.add() から addTension() へ変更
+    // 生成される実量に、秘かに太陽の繁茂係数を乗じる（あるいは安定させる）
+    const actualAmount = amount; 
+
+    // 残高の増加
+    state.accounts[user][currency] = (state.accounts[user][currency] || 0) + actualAmount;
+
+    // 2. Tensionの計算
+    const usdEquivalent = actualAmount / (EXCHANGE_RATES[currency] || 1);
+    
+    // [救済の数理]: 太陽のパワー(power)が強いほど、生成に伴う緊張(tension)の増加は抑制される
+    const tensionIncrease = (usdEquivalent * 0.005) / power; 
+    
     addTension(tensionIncrease);
 
-    // 3. 状態の更新
     updateState(state);
     return state;
 }
 
 // =========================================================================
-// 通貨交換 (Exchange Act)
+// 2. 通貨交換 (Exchange Act) - 「比率による流動」
 // =========================================================================
 
-/**
- * 通貨交換作為 (Exchange Act) を実行し、残高を交換する。
- * @param {string} user - 交換を行うユーザー名
- * @param {string} fromCurrency - 売却する通貨コード
- * @param {number} fromAmount - 売却する数量
- * @param {string} toCurrency - 購入する通貨コード
- * @returns {object} 更新された状態 (newState)
- */
 export function actExchangeCurrency(user, fromCurrency, fromAmount, toCurrency) {
     const state = getCurrentState();
 
@@ -73,30 +73,26 @@ export function actExchangeCurrency(user, fromCurrency, fromAmount, toCurrency) 
 
     // 1. 残高チェック
     if ((state.accounts[user][fromCurrency] || 0) < fromAmount) {
-        throw new Error(`${fromCurrency} の残高が不足しています。`);
+        throw new Error(`${fromCurrency} balance insufficient.`);
     }
 
-    // 2. 数量の計算
-    // USD基準で換算
+    // 2. 数量の計算 (USD基準)
     const rateFrom = EXCHANGE_RATES[fromCurrency] || 1;
     const rateTo = EXCHANGE_RATES[toCurrency] || 1;
-    
-    // 売却数量をUSD換算
     const usdEquivalent = fromAmount / rateFrom;
-    // USD換算値を購入通貨に換算
     const toAmount = usdEquivalent * rateTo;
 
     // 3. 残高の変更
     state.accounts[user][fromCurrency] -= fromAmount;
     state.accounts[user][toCurrency] = (state.accounts[user][toCurrency] || 0) + toAmount;
 
-    // 4. Tensionの計算と増加
-    // ExchangeはMintingよりは低いが、Tensionが発生
-    const tensionIncrease = usdEquivalent * 0.001; 
+    // 4. Tensionの計算
+    // 交換（流動）もまた、太陽のパワーによってその摩擦が浄化される
+    const power = solarAutonomy.getPower();
+    const tensionIncrease = (usdEquivalent * 0.001) / power; 
     
-    addTension(tensionIncrease); // 💡 修正: addTensionを使用
+    addTension(tensionIncrease);
 
-    // 5. 状態の更新
     updateState(state);
     return state;
 }
