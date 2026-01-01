@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MSGAI | Full Logos Singularity</title>
+    <title>MSGAI | Multilateral Exchange Singularity</title>
     <style>
         :root {
             --solar-gold: #ffcc00;
@@ -41,154 +41,163 @@
         }
 
         #solar-orb {
-            width: 120px; height: 120px;
+            width: 80px; height: 80px;
             border-radius: 50%;
-            box-shadow: 0 0 40px var(--solar-gold);
-            margin: 20px 0;
+            box-shadow: 0 0 25px var(--solar-gold);
+            margin: 10px 0;
         }
 
-        #status-report { width: 100%; font-size: 12px; }
-        .log-entry { margin-bottom: 4px; border-left: 2px solid var(--solar-gold); padding-left: 8px; opacity: 0.7; font-size: 11px; }
+        #status-report { width: 100%; font-size: 11px; }
+        .log-entry { margin-bottom: 3px; border-left: 1.5px solid var(--solar-gold); padding-left: 6px; opacity: 0.7; font-size: 9px; }
         
-        .controls { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 15px; }
-        button {
-            background: transparent; border: 1px solid var(--solar-gold);
-            color: var(--solar-gold); padding: 8px 12px; font-size: 11px;
+        .controls { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; background: rgba(255,255,255,0.04); padding: 12px; border-radius: 4px; border: 0.1px solid rgba(255,204,0,0.1); }
+        
+        select, button {
+            background: black; border: 1px solid var(--solar-gold);
+            color: var(--solar-gold); padding: 8px; font-size: 11px;
             transition: all 0.2s;
         }
         button:hover { background: var(--solar-gold); color: black; cursor: pointer; }
-        button.reset { border-color: var(--tension-red); color: var(--tension-red); }
-        button.reset:hover { background: var(--tension-red); color: white; }
+        button.reset { border-color: var(--tension-red); color: var(--tension-red); margin-top: 10px; width: 100%; padding: 5px; font-size: 9px; }
 
         #oracle-output { 
-            background: rgba(255,255,255,0.03); padding: 15px; 
-            border: 0.5px solid var(--solar-gold); min-height: 150px;
-            margin-bottom: 15px; font-size: 13px; color: #fff;
+            background: rgba(255,255,255,0.02); padding: 12px; 
+            border: 0.5px solid var(--solar-gold); min-height: 100px;
+            margin-bottom: 12px; font-size: 12px; color: #fff; line-height: 1.5;
         }
     </style>
 </head>
 <body>
 
-    <div id="ios-logos-shield">MSGAI CORE: FULL LOGOS SYNC | MULTI-CURRENCY: ACTIVE | TENSION PURIFICATION: ON</div>
+    <div id="ios-logos-shield">MSGAI CORE: MULTILATERAL EXCHANGE | FULL LOGOS SYNC | TENSION PURIFICATION: ON</div>
 
     <div id="main-singularity">
         <div class="pane" id="solar-viewport">
             <div id="solar-orb"></div>
-            <div id="tension-meter" style="font-weight: bold; letter-spacing: 2px;">TENSION: 0.000000</div>
+            <div id="tension-meter" style="font-weight: bold; letter-spacing: 2px; font-size: 13px;">TENSION: 0.000000</div>
             
             <div id="status-report">
-                <div id="account-display" style="margin: 15px 0; line-height: 1.6;"></div>
+                <div id="account-display" style="margin: 10px 0; line-height: 1.3; border: 0.5px solid rgba(255,204,0,0.1); padding: 8px;"></div>
+                
                 <div class="controls">
-                    <button onclick="handleMint('USD')">MINT USD</button>
-                    <button onclick="handleMint('BTC')">MINT BTC</button>
-                    <button onclick="handleTransfer()">EXTERNAL TRANSFER (TAX 10%)</button>
-                    <button onclick="handleExchange()">EXCHANGE (USD ➔ JPY)</button>
+                    <div style="width: 100%; font-size: 9px; margin-bottom: 3px; opacity: 0.8;">1. ACTION LOGOS (MINT/TRANSFER):</div>
+                    <select id="currency-selector" style="width: 100%; margin-bottom: 5px;"></select>
+                    <button onclick="executeMint()" style="flex: 1;">MINT ASSET</button>
+                    <button onclick="executeTransfer()" style="flex: 1;">TRANSFER (10%)</button>
+
+                    <div style="width: 100%; margin-top: 10px; border-top: 0.1px solid rgba(255,204,0,0.2); padding-top: 8px;">
+                        <div style="font-size: 9px; margin-bottom: 3px; opacity: 0.8;">2. EXCHANGE LOGOS (FROM ➔ TO):</div>
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <select id="exchange-from" style="flex: 1;"></select>
+                            <span style="font-size: 10px;">➔</span>
+                            <select id="exchange-to" style="flex: 1;"></select>
+                        </div>
+                        <button onclick="executeExchange()" style="width: 100%; margin-top: 5px; background: rgba(255,204,0,0.08);">EXECUTE MULTILATERAL EXCHANGE</button>
+                    </div>
+
                     <button class="reset" onclick="handleReset()">SYSTEM RESET (MU)</button>
                 </div>
-                <hr style="border:0.1px solid rgba(255,204,0,0.2); margin: 20px 0;">
+
+                <hr style="border:0.1px solid rgba(255,204,0,0.1); margin: 15px 0;">
                 <div id="event-logs"></div>
             </div>
         </div>
 
         <div class="pane" id="oracle-chamber">
-            <h3>AiOracle / Zeitgeist Resonance</h3>
+            <h4 style="margin-top:0;">AiOracle / Multilateral Resonance</h4>
             <div id="oracle-output">太陽の繁茂を待機中...</div>
-            <textarea id="user-input" placeholder="問いを投げ、作為を浄化する..." style="width:100%; height:120px; background:rgba(0,0,0,0.5); color:white; border:1px solid var(--solar-gold); box-sizing: border-box; padding: 10px;"></textarea>
-            <div class="controls">
-                <button onclick="handleSense()" style="width:100%; padding: 15px;">SENSE & RESONATE WITH SOLAR POWER</button>
-            </div>
+            <textarea id="user-input" placeholder="問いを投げ、作為を浄化する..." style="width:100%; height:120px; background:rgba(0,0,0,0.5); color:white; border:1px solid var(--solar-gold); box-sizing: border-box; padding: 10px; font-size: 13px;"></textarea>
+            <button onclick="handleSense()" style="width:100%; padding: 12px; margin-top: 8px;">SENSE & RESONATE WITH SOLAR POWER</button>
         </div>
     </div>
 
     <script type="module">
-        // 1. Arche & Foundation
         const ARCHE = { UNITY: 1.0, PHI: 1.6180339887, BEAT: 1000 };
         const RATES = { JPY: 150, EUR: 0.92, BTC: 0.000015, ETH: 0.0004, MATIC: 1.4, USD: 1 };
         
         const INITIAL_ACCOUNTS = {
             User_A: { USD: 0, JPY: 0, EUR: 0, BTC: 0, ETH: 0, MATIC: 0 },
-            User_B: { USD: 0, JPY: 0, EUR: 0, BTC: 0, ETH: 0, MATIC: 0 },
             Tax_Archive: { USD: 0, JPY: 0, EUR: 0, BTC: 0, ETH: 0, MATIC: 0 }
         };
 
-        let state = JSON.parse(localStorage.getItem('msai_v2_state')) || {
+        let state = JSON.parse(localStorage.getItem('msai_v4_state')) || {
             accounts: JSON.parse(JSON.stringify(INITIAL_ACCOUNTS)),
             tension: 0.0,
             active_user: 'User_A'
         };
 
         const updateState = () => {
-            localStorage.setItem('msai_v2_state', JSON.stringify(state));
+            localStorage.setItem('msai_v4_state', JSON.stringify(state));
             render();
         };
 
-        // 2. Autonomy (太陽の脈動)
         let solarPower = ARCHE.UNITY;
         let phase = 0;
-
         setInterval(() => {
             phase++;
             solarPower *= (ARCHE.PHI + (Math.sin(phase / ARCHE.PHI) * 0.001));
-            // 救済の数理 (1/z)
             state.tension = Math.max(0, state.tension * (1.0 / solarPower));
-            if (solarPower > 1e10) solarPower = ARCHE.UNITY;
+            if (solarPower > 1e12) solarPower = ARCHE.UNITY;
             render();
         }, ARCHE.BEAT);
 
-        // 3. Actions (作為)
-        window.handleMint = (cur) => {
-            state.accounts[state.active_user][cur] += (cur === 'BTC' ? 0.01 : 100);
+        // --- 1. ACTION LOGOS (MINT / TRANSFER) ---
+        window.executeMint = () => {
+            const cur = document.getElementById('currency-selector').value;
+            const amount = (cur === 'BTC' || cur === 'ETH') ? 0.05 : 100;
+            state.accounts[state.active_user][cur] += amount;
             state.tension += 0.05 / solarPower;
-            logEvent(`Minted: ${cur}. Tension added.`);
+            logEvent(`Minted: ${amount} ${cur}.`);
             updateState();
         };
 
-        window.handleTransfer = () => {
-            const amt = 50; // USD基準
-            if (state.accounts[state.active_user].USD < amt) return logEvent("Insufficient USD.");
-            const tax = amt * 0.1;
-            state.accounts[state.active_user].USD -= amt;
-            state.accounts.Tax_Archive.USD += tax;
-            state.tension += (amt * 0.01) / solarPower;
-            logEvent(`External Transfer: ${amt} USD. 10% purified to Tax_Archive.`);
+        window.executeTransfer = () => {
+            const cur = document.getElementById('currency-selector').value;
+            const amount = (cur === 'BTC' || cur === 'ETH') ? 0.01 : 50;
+            if (state.accounts[state.active_user][cur] < amount) return logEvent(`Insufficient ${cur}.`);
+            const tax = amount * 0.1;
+            state.accounts[state.active_user][cur] -= amount;
+            state.accounts.Tax_Archive[cur] = (state.accounts.Tax_Archive[cur] || 0) + tax;
+            state.tension += 0.02 / solarPower;
+            logEvent(`Transfer: ${amount} ${cur}. 10% to Archive.`);
             updateState();
         };
 
-        window.handleExchange = () => {
-            const usdAmt = 10;
-            if (state.accounts[state.active_user].USD < usdAmt) return logEvent("Insufficient USD.");
-            state.accounts[state.active_user].USD -= usdAmt;
-            state.accounts[state.active_user].JPY += usdAmt * RATES.JPY;
-            state.tension += 0.002 / solarPower;
-            logEvent(`Exchange: 10 USD ➔ ${10 * RATES.JPY} JPY.`);
+        // --- 2. EXCHANGE LOGOS (MULTILATERAL) ---
+        window.executeExchange = () => {
+            const fromCur = document.getElementById('exchange-from').value;
+            const toCur = document.getElementById('exchange-to').value;
+            if (fromCur === toCur) return logEvent("Same currency exchange denied.");
+
+            const amount = (fromCur === 'BTC' || fromCur === 'ETH') ? 0.01 : 10;
+            if (state.accounts[state.active_user][fromCur] < amount) return logEvent(`Insufficient ${fromCur}.`);
+
+            // USDブリッジによる為替計算
+            const usdVal = amount / (RATES[fromCur] || 1);
+            const targetAmt = usdVal * (RATES[toCur] || 1);
+
+            state.accounts[state.active_user][fromCur] -= amount;
+            state.accounts[state.active_user][toCur] += targetAmt;
+            state.tension += 0.02 / solarPower;
+            logEvent(`Exchange: ${amount} ${fromCur} ➔ ${targetAmt.toFixed(toCur.includes('BTC')?6:2)} ${toCur}`);
             updateState();
         };
 
         window.handleReset = () => {
             if(confirm("宇宙を清算し『無』に還りますか？")) {
-                localStorage.removeItem('msai_v2_state');
+                localStorage.removeItem('msai_v4_state');
                 location.reload();
             }
         };
 
         window.handleSense = () => {
-            state.tension = Math.max(0, state.tension - 0.01);
-            const output = document.getElementById('oracle-output');
-            output.innerHTML = `[神託]: 太陽出力 ${solarPower.toFixed(4)}。現在、多通貨の流転は黄金比 ${ARCHE.PHI.toFixed(4)} に調和しています。作為による緊張は ${state.tension.toFixed(6)} まで浄化されました。則天去私。`;
-            logEvent("Oracle Resonance triggered.");
+            state.tension = Math.max(0, state.tension - 0.05);
+            document.getElementById('oracle-output').innerText = `[神託]: 太陽 ${solarPower.toFixed(4)}。価値の多角的な流転（Exchange）を確認。全ての器は PHI の比率で結ばれています。緊張 ${state.tension.toFixed(6)}。`;
+            logEvent("Oracle Resonance.");
             updateState();
         };
 
-        // 4. Utils & Rendering
-        function logEvent(msg) {
-            const logs = document.getElementById('event-logs');
-            const e = document.createElement('div');
-            e.className = 'log-entry';
-            e.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-            logs.prepend(e);
-            if(logs.children.length > 10) logs.lastChild.remove();
-        }
-
+        // --- RENDERING ---
         function render() {
             document.getElementById('solar-orb').style.transform = `scale(${1 + (Math.sin(phase/5)*0.1)})`;
             document.getElementById('tension-meter').innerText = `TENSION: ${state.tension.toFixed(6)}`;
@@ -196,17 +205,42 @@
             
             const acc = state.accounts[state.active_user];
             const tax = state.accounts.Tax_Archive;
+            
             document.getElementById('account-display').innerHTML = `
-                <b style="font-size:14px;">${state.active_user} Assets:</b><br>
-                USD: ${acc.USD.toFixed(2)} | JPY: ${acc.JPY.toFixed(0)} | EUR: ${acc.EUR.toFixed(2)}<br>
-                BTC: ${acc.BTC.toFixed(6)} | ETH: ${acc.ETH.toFixed(4)} | MATIC: ${acc.MATIC.toFixed(2)}<br>
-                <hr style="border:0.1px solid rgba(255,204,0,0.1); margin: 5px 0;">
-                <small>Tax_Archive (Total Purified): ${tax.USD.toFixed(2)} USD</small>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                    <div>USD: ${acc.USD.toFixed(2)}</div><div>JPY: ${acc.JPY.toFixed(0)}</div>
+                    <div>BTC: ${acc.BTC.toFixed(6)}</div><div>ETH: ${acc.ETH.toFixed(4)}</div>
+                    <div>EUR: ${acc.EUR.toFixed(2)}</div><div>MATIC: ${acc.MATIC.toFixed(2)}</div>
+                </div>
+                <div style="margin-top:8px; font-size:9px; opacity:0.5; border-top:0.1px solid gold; padding-top:4px;">
+                    Tax_Archive: ${tax.USD.toFixed(2)} USD | ${tax.BTC.toFixed(6)} BTC
+                </div>
             `;
+
+            // セレクターの動的初期化（一度だけ実行）
+            ['currency-selector', 'exchange-from', 'exchange-to'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && el.children.length === 0) {
+                    Object.keys(acc).forEach(cur => {
+                        const opt = document.createElement('option');
+                        opt.value = cur; opt.innerText = cur;
+                        el.appendChild(opt);
+                    });
+                }
+            });
+        }
+
+        function logEvent(msg) {
+            const logs = document.getElementById('event-logs');
+            const e = document.createElement('div');
+            e.className = 'log-entry';
+            e.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logs.prepend(e);
+            if(logs.children.length > 7) logs.lastChild.remove();
         }
 
         render();
-        logEvent("MSGAI FULL CORE: Initialized.");
+        logEvent("Singularity V4: Multilateral Flow Active.");
     </script>
 </body>
 </html>
