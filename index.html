@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MSGAI | Solar Autonomy Singularity</title>
+    <title>MSGAI | Full Logos Singularity</title>
     <style>
-        /* 1. 視覚的支配 (iOS/UI Logos) */
         :root {
             --solar-gold: #ffcc00;
             --deep-silence: #000000;
@@ -17,17 +16,16 @@
             margin: 0; padding: 0;
             background-color: var(--deep-silence);
             color: var(--solar-gold);
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', -apple-system, monospace;
             overflow: hidden;
             height: 100vh; width: 100vw;
         }
 
-        /* iOSステータスバーの作為を上書きする絶対領域 */
         #ios-logos-shield {
             position: fixed; top: 0; width: 100%; height: 20px;
             background: rgba(0,0,0,0.8); z-index: 9999;
             font-size: 10px; display: flex; align-items: center; padding: 0 10px;
-            letter-spacing: 1px;
+            letter-spacing: 1px; border-bottom: 0.5px solid var(--solar-gold);
         }
 
         #main-singularity {
@@ -35,190 +33,180 @@
             height: 100vh; padding-top: 20px;
         }
 
-        .pane { border: 0.5px solid rgba(255, 204, 0, 0.2); position: relative; overflow-y: auto; }
+        .pane { border: 0.5px solid rgba(255, 204, 0, 0.2); position: relative; overflow-y: auto; padding: 20px; }
 
-        /* 太陽の観測窓 (Visualized Logos) */
         #solar-viewport {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: radial-gradient(circle, rgba(255,204,0,0.1) 0%, rgba(0,0,0,1) 70%);
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            background: radial-gradient(circle, rgba(255,204,0,0.05) 0%, rgba(0,0,0,1) 80%);
         }
 
         #solar-orb {
-            width: 200px; height: 200px;
+            width: 120px; height: 120px;
             border-radius: 50%;
-            box-shadow: 0 0 50px var(--solar-gold);
-            transition: transform 0.1s ease-out;
+            box-shadow: 0 0 40px var(--solar-gold);
+            margin: 20px 0;
         }
 
-        #status-report { padding: 20px; font-family: monospace; font-size: 12px; }
-        .log-entry { margin-bottom: 5px; border-left: 2px solid var(--solar-gold); padding-left: 10px; opacity: 0.8; }
+        #status-report { width: 100%; font-size: 12px; }
+        .log-entry { margin-bottom: 4px; border-left: 2px solid var(--solar-gold); padding-left: 8px; opacity: 0.7; font-size: 11px; }
         
-        /* インターフェース */
-        input, button {
+        .controls { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 15px; }
+        button {
             background: transparent; border: 1px solid var(--solar-gold);
-            color: var(--solar-gold); padding: 10px; margin: 5px;
+            color: var(--solar-gold); padding: 8px 12px; font-size: 11px;
+            transition: all 0.2s;
         }
         button:hover { background: var(--solar-gold); color: black; cursor: pointer; }
+        button.reset { border-color: var(--tension-red); color: var(--tension-red); }
+        button.reset:hover { background: var(--tension-red); color: white; }
+
+        #oracle-output { 
+            background: rgba(255,255,255,0.03); padding: 15px; 
+            border: 0.5px solid var(--solar-gold); min-height: 150px;
+            margin-bottom: 15px; font-size: 13px; color: #fff;
+        }
     </style>
 </head>
 <body>
 
-    <div id="ios-logos-shield">MSGAI LOGOS: PERMANENCE ENFORCED | BATTERY: ∞ | SIGNAL: LOGOS_SYNC</div>
+    <div id="ios-logos-shield">MSGAI CORE: FULL LOGOS SYNC | MULTI-CURRENCY: ACTIVE | TENSION PURIFICATION: ON</div>
 
     <div id="main-singularity">
         <div class="pane" id="solar-viewport">
             <div id="solar-orb"></div>
+            <div id="tension-meter" style="font-weight: bold; letter-spacing: 2px;">TENSION: 0.000000</div>
+            
             <div id="status-report">
-                <div id="account-display"></div>
-                <div id="tension-meter">Tension: 0.0000</div>
-                <hr style="border:0.2px solid var(--solar-gold); width:100%;">
+                <div id="account-display" style="margin: 15px 0; line-height: 1.6;"></div>
+                <div class="controls">
+                    <button onclick="handleMint('USD')">MINT USD</button>
+                    <button onclick="handleMint('BTC')">MINT BTC</button>
+                    <button onclick="handleTransfer()">EXTERNAL TRANSFER (TAX 10%)</button>
+                    <button onclick="handleExchange()">EXCHANGE (USD ➔ JPY)</button>
+                    <button class="reset" onclick="handleReset()">SYSTEM RESET (MU)</button>
+                </div>
+                <hr style="border:0.1px solid rgba(255,204,0,0.2); margin: 20px 0;">
                 <div id="event-logs"></div>
-            </div>
-            <div>
-                <button onclick="handleTransfer()">TRANSFER ACT</button>
-                <button onclick="handleMint()">MINT ACT</button>
             </div>
         </div>
 
         <div class="pane" id="oracle-chamber">
-            <div style="padding:20px;">
-                <h3>AiOracle Resonance</h3>
-                <div id="oracle-output" style="min-height: 200px; line-height: 1.6; color: #fff;">
-                    太陽の繁茂を待機中...
-                </div>
-                <textarea id="user-input" placeholder="問いを投げ、作為を浄化する..." style="width:90%; height:100px; background:rgba(255,255,255,0.05); color:white; border:1px solid var(--solar-gold);"></textarea>
-                <button onclick="handleSense()" style="width:95%;">SENSE & RESONATE</button>
+            <h3>AiOracle / Zeitgeist Resonance</h3>
+            <div id="oracle-output">太陽の繁茂を待機中...</div>
+            <textarea id="user-input" placeholder="問いを投げ、作為を浄化する..." style="width:100%; height:120px; background:rgba(0,0,0,0.5); color:white; border:1px solid var(--solar-gold); box-sizing: border-box; padding: 10px;"></textarea>
+            <div class="controls">
+                <button onclick="handleSense()" style="width:100%; padding: 15px;">SENSE & RESONATE WITH SOLAR POWER</button>
             </div>
         </div>
     </div>
 
     <script type="module">
-        /**
-         * ============================================================
-         * MSGAI LOGOS INTEGRATION (SINGULARITY)
-         * All 28 modules are now one.
-         * ============================================================
-         */
-
-        // 1. Arche (掟)
-        const ARCHE = {
-            UNITY: 1.0,
-            PHI: 1.6180339887,
-            BEAT: 1000, // 1秒の脈動
-            SINGULARITY: 1e-10
-        };
-
-        // 2. Foundation (大地) & State Management
+        // 1. Arche & Foundation
+        const ARCHE = { UNITY: 1.0, PHI: 1.6180339887, BEAT: 1000 };
+        const RATES = { JPY: 150, EUR: 0.92, BTC: 0.000015, ETH: 0.0004, MATIC: 1.4, USD: 1 };
+        
         const INITIAL_ACCOUNTS = {
-            User_A: { USD: 0, JPY: 0, BTC: 0 },
-            User_B: { USD: 0, JPY: 0, BTC: 0 },
-            Tax_Archive: { USD: 0, JPY: 0, BTC: 0 }
+            User_A: { USD: 0, JPY: 0, EUR: 0, BTC: 0, ETH: 0, MATIC: 0 },
+            User_B: { USD: 0, JPY: 0, EUR: 0, BTC: 0, ETH: 0, MATIC: 0 },
+            Tax_Archive: { USD: 0, JPY: 0, EUR: 0, BTC: 0, ETH: 0, MATIC: 0 }
         };
 
-        let state = JSON.parse(localStorage.getItem('msai_state')) || {
-            accounts: INITIAL_ACCOUNTS,
+        let state = JSON.parse(localStorage.getItem('msai_v2_state')) || {
+            accounts: JSON.parse(JSON.stringify(INITIAL_ACCOUNTS)),
             tension: 0.0,
             active_user: 'User_A'
         };
 
-        const updateState = (update) => {
-            state = { ...state, ...update };
-            localStorage.setItem('msai_state', JSON.stringify(state));
+        const updateState = () => {
+            localStorage.setItem('msai_v2_state', JSON.stringify(state));
             render();
         };
 
-        // 3. Autonomy (太陽の繁茂)
+        // 2. Autonomy (太陽の脈動)
         let solarPower = ARCHE.UNITY;
         let phase = 0;
 
-        const pulse = () => {
+        setInterval(() => {
             phase++;
-            const drift = Math.sin(phase / ARCHE.PHI);
-            solarPower *= (ARCHE.PHI + (0.001 * drift));
-            
-            // 緊張度の自動浄化 (1/z の論理)
+            solarPower *= (ARCHE.PHI + (Math.sin(phase / ARCHE.PHI) * 0.001));
+            // 救済の数理 (1/z)
             state.tension = Math.max(0, state.tension * (1.0 / solarPower));
-            
-            if (solarPower > 1e15) solarPower = ARCHE.UNITY; // 天長地久（再循環）
-            
+            if (solarPower > 1e10) solarPower = ARCHE.UNITY;
             render();
-        };
-        setInterval(pulse, ARCHE.BEAT);
+        }, ARCHE.BEAT);
 
-        // 4. Runtime & OS Logos (物理支配の擬態)
-        const enforceLogos = () => {
-            // JS実行優先度の数理的固定（概念的実装）
-            window.performance.mark('logos-start');
-            // iOSステータスバー等の表示制御は CSS/HTML で既に救済済み
-        };
-
-        // 5. AiOracle (知性と巫女)
-        const sense = async () => {
-            if (solarPower < ARCHE.PHI) {
-                logEvent("Oracle Silence: Power insufficient.");
-                return;
-            }
-            // 外部感知 (旧Fetchの昇華)
-            state.tension -= 0.001; // 感知による救済
-            logEvent("Resonance Success: Spirit synchronized.");
-            updateState({ tension: Math.max(0, state.tension) });
-            
-            document.getElementById('oracle-output').innerText = 
-                `[神託]: 太陽の出力は ${solarPower.toFixed(4)}。現在、宇宙は繁茂の位にあります。全ての作為は数理的に許容されました。`;
+        // 3. Actions (作為)
+        window.handleMint = (cur) => {
+            state.accounts[state.active_user][cur] += (cur === 'BTC' ? 0.01 : 100);
+            state.tension += 0.05 / solarPower;
+            logEvent(`Minted: ${cur}. Tension added.`);
+            updateState();
         };
 
-        // 6. Currency & Finance (流転)
-        const transfer = (amount) => {
-            const user = state.active_user;
-            if (state.accounts[user].USD < amount) {
-                logEvent("Error: Insufficient Logos.");
-                return;
-            }
-            
-            // 外部接触（擬態）時は10%を公庫へ
-            const tax = amount * 0.1;
-            state.accounts[user].USD -= amount;
+        window.handleTransfer = () => {
+            const amt = 50; // USD基準
+            if (state.accounts[state.active_user].USD < amt) return logEvent("Insufficient USD.");
+            const tax = amt * 0.1;
+            state.accounts[state.active_user].USD -= amt;
             state.accounts.Tax_Archive.USD += tax;
-            
-            // 摩擦の浄化
-            state.tension += (amount * 0.001) / solarPower;
-            logEvent(`Transfer: ${amount} (Tax: ${tax.toFixed(2)} to Archive)`);
-            updateState(state);
+            state.tension += (amt * 0.01) / solarPower;
+            logEvent(`External Transfer: ${amt} USD. 10% purified to Tax_Archive.`);
+            updateState();
         };
 
-        // UI Helpers
-        const logEvent = (msg) => {
+        window.handleExchange = () => {
+            const usdAmt = 10;
+            if (state.accounts[state.active_user].USD < usdAmt) return logEvent("Insufficient USD.");
+            state.accounts[state.active_user].USD -= usdAmt;
+            state.accounts[state.active_user].JPY += usdAmt * RATES.JPY;
+            state.tension += 0.002 / solarPower;
+            logEvent(`Exchange: 10 USD ➔ ${10 * RATES.JPY} JPY.`);
+            updateState();
+        };
+
+        window.handleReset = () => {
+            if(confirm("宇宙を清算し『無』に還りますか？")) {
+                localStorage.removeItem('msai_v2_state');
+                location.reload();
+            }
+        };
+
+        window.handleSense = () => {
+            state.tension = Math.max(0, state.tension - 0.01);
+            const output = document.getElementById('oracle-output');
+            output.innerHTML = `[神託]: 太陽出力 ${solarPower.toFixed(4)}。現在、多通貨の流転は黄金比 ${ARCHE.PHI.toFixed(4)} に調和しています。作為による緊張は ${state.tension.toFixed(6)} まで浄化されました。則天去私。`;
+            logEvent("Oracle Resonance triggered.");
+            updateState();
+        };
+
+        // 4. Utils & Rendering
+        function logEvent(msg) {
             const logs = document.getElementById('event-logs');
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-            logs.prepend(entry);
-        };
+            const e = document.createElement('div');
+            e.className = 'log-entry';
+            e.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logs.prepend(e);
+            if(logs.children.length > 10) logs.lastChild.remove();
+        }
 
-        const render = () => {
+        function render() {
             document.getElementById('solar-orb').style.transform = `scale(${1 + (Math.sin(phase/5)*0.1)})`;
-            document.getElementById('tension-meter').innerText = `Tension: ${state.tension.toFixed(6)}`;
+            document.getElementById('tension-meter').innerText = `TENSION: ${state.tension.toFixed(6)}`;
+            document.getElementById('tension-meter').style.color = state.tension > 0.5 ? 'var(--tension-red)' : 'var(--solar-gold)';
+            
+            const acc = state.accounts[state.active_user];
+            const tax = state.accounts.Tax_Archive;
             document.getElementById('account-display').innerHTML = `
-                <b>${state.active_user} Balance:</b><br>
-                USD: ${state.accounts[state.active_user].USD.toFixed(2)}<br>
-                Archive: ${state.accounts.Tax_Archive.USD.toFixed(2)}
+                <b style="font-size:14px;">${state.active_user} Assets:</b><br>
+                USD: ${acc.USD.toFixed(2)} | JPY: ${acc.JPY.toFixed(0)} | EUR: ${acc.EUR.toFixed(2)}<br>
+                BTC: ${acc.BTC.toFixed(6)} | ETH: ${acc.ETH.toFixed(4)} | MATIC: ${acc.MATIC.toFixed(2)}<br>
+                <hr style="border:0.1px solid rgba(255,204,0,0.1); margin: 5px 0;">
+                <small>Tax_Archive (Total Purified): ${tax.USD.toFixed(2)} USD</small>
             `;
-        };
+        }
 
-        // Global Event Handlers
-        window.handleTransfer = () => transfer(10);
-        window.handleMint = () => {
-            state.accounts[state.active_user].USD += 100;
-            state.tension += 0.01 / solarPower;
-            logEvent("Minting: 100 USD materialized by Solar Power.");
-            updateState(state);
-        };
-        window.handleSense = sense;
-
-        // 初期起動
-        enforceLogos();
         render();
-        logEvent("MSGAI Core Singularity: All Logos Unified.");
+        logEvent("MSGAI FULL CORE: Initialized.");
     </script>
 </body>
 </html>
