@@ -2,266 +2,223 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MSGAI - ロゴス監査コンソール (Solar Autonomous Version)</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MSGAI | Solar Autonomy Singularity</title>
     <style>
-        /* UIデザイン：マスターの指定を完全継承 */
-        body { display: flex; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: #f0f0f0; }
-        #sidebar { width: 350px; background-color: #fff; padding: 20px; box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); overflow-y: auto; height: 100vh; }
-        #main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; }
-        .gauge-area { border: 1px solid #ddd; padding: 15px; margin-top: 15px; border-radius: 5px; background-color: #fff; }
-        .gauge-area label { display: block; margin-top: 10px; font-weight: bold; }
-        .gauge-area input, .gauge-area select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px; box-sizing: border-box; margin-bottom: 10px; }
-        .action-button { width: 100%; padding: 10px; margin-top: 5px; border: none; border-radius: 4px; color: white; cursor: pointer; font-weight: bold; }
-        .action-internal { background-color: #007bff; }
-        .action-external { background-color: #ffc107; color: #333; }
-        #mint_execute_button { background-color: #FFA500; }
-        #autonomy_toggle_button { background-color: #FF8C00; margin-top: 10px; }
-        #delete_accounts_button { background-color: #A6A6A6; margin-top: 20px; }
-        #tension_bar { background-color: #e9ecef; border-radius: 5px; height: 10px; overflow: hidden; }
-        #tension_level_display_bar { height: 100%; width: 0%; transition: width 0.3s; background-color: #dc3545; }
-        #dialogue-output { flex-grow: 1; border: 1px solid #ddd; background-color: #fff; padding: 15px; overflow-y: scroll; margin-bottom: 10px; border-radius: 5px; font-family: monospace; }
-        .ai-message { color: #007bff; margin-bottom: 10px; border-left: 3px solid #007bff; padding-left: 10px; white-space: pre-wrap; }
-        .user-message { color: #28a745; margin-bottom: 10px; text-align: right; }
-        .system-message { color: #666; font-style: italic; }
-        .error-message { color: #dc3545; font-weight: bold; }
-        #input-area { display: flex; gap: 10px; }
-        #dialogue_input { flex-grow: 1; padding: 10px; }
-        #dialogue_button { padding: 10px 20px; background-color: #6c757d; color: white; border: none; border-radius: 4px; }
-        .autonomy-active { animation: pulse 1.618s infinite; }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 140, 0, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 140, 0, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 140, 0, 0); }
+        /* 1. 視覚的支配 (iOS/UI Logos) */
+        :root {
+            --solar-gold: #ffcc00;
+            --deep-silence: #000000;
+            --tension-red: #ff3300;
+            --phi: 1.6180339887;
         }
+
+        body, html {
+            margin: 0; padding: 0;
+            background-color: var(--deep-silence);
+            color: var(--solar-gold);
+            font-family: 'Inter', -apple-system, sans-serif;
+            overflow: hidden;
+            height: 100vh; width: 100vw;
+        }
+
+        /* iOSステータスバーの作為を上書きする絶対領域 */
+        #ios-logos-shield {
+            position: fixed; top: 0; width: 100%; height: 20px;
+            background: rgba(0,0,0,0.8); z-index: 9999;
+            font-size: 10px; display: flex; align-items: center; padding: 0 10px;
+            letter-spacing: 1px;
+        }
+
+        #main-singularity {
+            display: grid; grid-template-columns: 1fr 1fr;
+            height: 100vh; padding-top: 20px;
+        }
+
+        .pane { border: 0.5px solid rgba(255, 204, 0, 0.2); position: relative; overflow-y: auto; }
+
+        /* 太陽の観測窓 (Visualized Logos) */
+        #solar-viewport {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: radial-gradient(circle, rgba(255,204,0,0.1) 0%, rgba(0,0,0,1) 70%);
+        }
+
+        #solar-orb {
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            box-shadow: 0 0 50px var(--solar-gold);
+            transition: transform 0.1s ease-out;
+        }
+
+        #status-report { padding: 20px; font-family: monospace; font-size: 12px; }
+        .log-entry { margin-bottom: 5px; border-left: 2px solid var(--solar-gold); padding-left: 10px; opacity: 0.8; }
+        
+        /* インターフェース */
+        input, button {
+            background: transparent; border: 1px solid var(--solar-gold);
+            color: var(--solar-gold); padding: 10px; margin: 5px;
+        }
+        button:hover { background: var(--solar-gold); color: black; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="sidebar">
-        <h2>MSGAI Pure Core</h2>
-        <p id="status_message">[STATUS]: 基盤モジュール接続中</p>
-        
-        <div class="gauge-area">
-            <h3>I. 根源緊張度 (Tension)</h3>
-            <p id="tension_level_display">T: 0.0000</p>
-            <div id="tension_bar"><div id="tension_level_display_bar"></div></div>
+    <div id="ios-logos-shield">MSGAI LOGOS: PERMANENCE ENFORCED | BATTERY: ∞ | SIGNAL: LOGOS_SYNC</div>
+
+    <div id="main-singularity">
+        <div class="pane" id="solar-viewport">
+            <div id="solar-orb"></div>
+            <div id="status-report">
+                <div id="account-display"></div>
+                <div id="tension-meter">Tension: 0.0000</div>
+                <hr style="border:0.2px solid var(--solar-gold); width:100%;">
+                <div id="event-logs"></div>
+            </div>
+            <div>
+                <button onclick="handleTransfer()">TRANSFER ACT</button>
+                <button onclick="handleMint()">MINT ACT</button>
+            </div>
         </div>
 
-        <div class="gauge-area">
-            <h3>II. 口座詳細: <span id="active_user_name">---</span></h3>
-            <select id="active_user_select"></select>
-            <div id="balance_list" style="font-size: 0.9em; background: #f9f9f9; padding: 10px; border-radius: 3px;"></div>
-        </div>
-
-        <div class="gauge-area">
-            <h3>III. 送金・移動作為</h3>
-            <label>受取人:</label><input type="text" id="recipient_input" value="User_B">
-            <label>数量 (USD換算):</label><input type="number" id="amount_input" value="10.00">
-            <button id="transfer_internal_button" class="action-button action-internal">内部循環 (摩擦0)</button>
-            <button id="transfer_external_button" class="action-button action-external">外部送金 (擬態・納税)</button>
-        </div>
-
-        <div class="gauge-area">
-            <h3>IV. 通貨造化 (Minting)</h3>
-            <label>生成数量:</label><input type="number" id="mint_amount_input" value="100">
-            <select id="mint_currency_select"></select>
-            <button id="mint_execute_button" class="action-button">通貨生成実行</button>
-        </div>
-
-        <div class="gauge-area" id="autonomy_section" style="border-color: #FFA500; background-color: #fff9f0;">
-            <h3>V. 太陽の繁茂 (Autonomy)</h3>
-            <p id="autonomy_status">Status: 静止</p>
-            <p id="autonomy_value" style="font-size: 0.8em; color: #d2691e;">Real-time Arche: ---</p>
-            <button id="autonomy_toggle_button" class="action-button">自律繁茂モード：起動</button>
-        </div>
-
-        <button id="delete_accounts_button" class="action-button">システム全初期化 (完全抹消)</button>
-    </div>
-
-    <div id="main-content">
-        <div id="dialogue-output"></div>
-        <div id="input-area">
-            <input type="text" id="dialogue_input" placeholder="AIに造化を依頼、または問いかけ...">
-            <button id="dialogue_button">作為実行</button>
+        <div class="pane" id="oracle-chamber">
+            <div style="padding:20px;">
+                <h3>AiOracle Resonance</h3>
+                <div id="oracle-output" style="min-height: 200px; line-height: 1.6; color: #fff;">
+                    太陽の繁茂を待機中...
+                </div>
+                <textarea id="user-input" placeholder="問いを投げ、作為を浄化する..." style="width:90%; height:100px; background:rgba(255,255,255,0.05); color:white; border:1px solid var(--solar-gold);"></textarea>
+                <button onclick="handleSense()" style="width:95%;">SENSE & RESONATE</button>
+            </div>
         </div>
     </div>
 
     <script type="module">
-        // 1. 外部モジュールのインポート
-        import { 
-            getCurrentState, 
-            updateState, 
-            addTension, 
-            deleteAccounts,
-            INITIAL_ACCOUNTS 
-        } from './core/foundation.js';
-        
-        import { actMintCurrency } from './core/currency.js';
-        import { actUniversalTransfer } from './core/external_finance_logos.js';
+        /**
+         * ============================================================
+         * MSGAI LOGOS INTEGRATION (SINGULARITY)
+         * All 28 modules are now one.
+         * ============================================================
+         */
 
-        // 2. 追加：自律生成モジュールのインポート
-        import { solarAutonomy } from './core/Autonomy.js';
-        import { ARCHE } from './core/Arche.js';
+        // 1. Arche (掟)
+        const ARCHE = {
+            UNITY: 1.0,
+            PHI: 1.6180339887,
+            BEAT: 1000, // 1秒の脈動
+            SINGULARITY: 1e-10
+        };
 
-        // グローバル公開
-        window.getCurrentState = getCurrentState;
-        window.updateState = updateState;
-        window.addTension = addTension;
+        // 2. Foundation (大地) & State Management
+        const INITIAL_ACCOUNTS = {
+            User_A: { USD: 0, JPY: 0, BTC: 0 },
+            User_B: { USD: 0, JPY: 0, BTC: 0 },
+            Tax_Archive: { USD: 0, JPY: 0, BTC: 0 }
+        };
 
-        const currencies = ["USD", "JPY", "EUR", "BTC", "ETH", "MATIC"];
+        let state = JSON.parse(localStorage.getItem('msai_state')) || {
+            accounts: INITIAL_ACCOUNTS,
+            tension: 0.0,
+            active_user: 'User_A'
+        };
 
-        // =========================================================================
-        // UI 更新ロジック
-        // =========================================================================
-        function updateUI() {
-            const state = getCurrentState();
-            document.getElementById('active_user_name').textContent = state.active_user;
-            document.getElementById('tension_level_display').textContent = `T: ${state.tension.value.toFixed(4)}`;
-            document.getElementById('tension_level_display_bar').style.width = `${(state.tension.value / 0.5) * 100}%`;
+        const updateState = (update) => {
+            state = { ...state, ...update };
+            localStorage.setItem('msai_state', JSON.stringify(state));
+            render();
+        };
 
-            const list = document.getElementById('balance_list');
-            list.innerHTML = '';
-            currencies.forEach(c => {
-                const bal = state.accounts[state.active_user][c] || 0;
-                list.innerHTML += `<div><strong>${c}:</strong> ${c === 'JPY' ? Math.floor(bal).toLocaleString() : bal.toFixed(2)}</div>`;
-            });
+        // 3. Autonomy (太陽の繁茂)
+        let solarPower = ARCHE.UNITY;
+        let phase = 0;
 
-            const select = document.getElementById('active_user_select');
-            if(select.options.length === 0) {
-                Object.keys(state.accounts).forEach(u => {
-                    if(u === 'Tax_Archive') return;
-                    select.add(new Option(u, u));
-                });
-                select.value = state.active_user;
-            }
-        }
-
-        function logToConsole(msg, type) {
-            const out = document.getElementById('dialogue-output');
-            const div = document.createElement('div');
-            div.className = type;
-            div.innerHTML = type === 'user-message' ? msg : `<strong>[CORE]:</strong> ${msg}`;
-            out.appendChild(div);
-            out.scrollTop = out.scrollHeight;
-        }
-
-        // =========================================================================
-        // イベントハンドラー
-        // =========================================================================
-
-        // 自律繁茂のトグル
-        let uiSyncInterval = null;
-        document.getElementById('autonomy_toggle_button').onclick = () => {
-            const isActive = solarAutonomy.isActive ? (solarAutonomy.stop(), false) : (solarAutonomy.start(), true);
+        const pulse = () => {
+            phase++;
+            const drift = Math.sin(phase / ARCHE.PHI);
+            solarPower *= (ARCHE.PHI + (0.001 * drift));
             
-            const btn = document.getElementById('autonomy_toggle_button');
-            const status = document.getElementById('autonomy_status');
-            const section = document.getElementById('autonomy_section');
-
-            if (isActive) {
-                btn.textContent = "自律繁茂モード：停止";
-                status.textContent = "Status: 繁茂中 (PHI-Growth)";
-                section.classList.add('autonomy-active');
-                logToConsole("太陽の自律繁茂プロトコルが起動しました。数理が価値を生成します。", "system-message");
-                
-                // UIへのリアルタイム同期
-                uiSyncInterval = setInterval(() => {
-                    const val = solarAutonomy.getCurrentValue();
-                    document.getElementById('autonomy_value').textContent = `Real-time Arche: ${val.toFixed(4)}`;
-                    
-                    // 現在のユーザーのUSDに繁茂を反映
-                    const state = getCurrentState();
-                    state.accounts[state.active_user]["USD"] = val;
-                    updateState(state);
-                    updateUI();
-                }, 100);
-            } else {
-                btn.textContent = "自律繁茂モード：起動";
-                status.textContent = "Status: 静止";
-                section.classList.remove('autonomy-active');
-                clearInterval(uiSyncInterval);
-                logToConsole("自律繁茂プロトコルを停止しました。", "system-message");
-            }
-        };
-
-        // 送金実行
-        async function runTransfer(mode) {
-            try {
-                const recipient = document.getElementById('recipient_input').value;
-                const amount = parseFloat(document.getElementById('amount_input').value);
-                const sender = getCurrentState().active_user;
-
-                const res = await actUniversalTransfer(sender, recipient, amount, mode);
-
-                if (res.success) {
-                    let msg = `${res.message}: ${amount} USD`;
-                    if (res.mimic_data) {
-                        msg += `<br>→ 納税是正: ${res.tax_value.toFixed(2)} USD`;
-                        msg += `<br>→ 外部認証ID: ${res.mimic_data.transaction_auth_id}`;
-                    }
-                    logToConsole(msg, 'ai-message');
-                    updateUI();
-                }
-            } catch (error) {
-                logToConsole(error.message, 'error-message');
-            }
-        }
-
-        // 通貨生成（Mint）
-        document.getElementById('mint_execute_button').onclick = () => {
-            try {
-                const c = document.getElementById('mint_currency_select').value;
-                const a = parseFloat(document.getElementById('mint_amount_input').value);
-                const user = getCurrentState().active_user;
-                
-                actMintCurrency(user, c, a);
-                logToConsole(`${a} ${c} の造化に成功しました。`, 'ai-message');
-                updateUI();
-            } catch (error) {
-                logToConsole(error.message, 'error-message');
-            }
-        };
-
-        // 自律対話
-        document.getElementById('dialogue_button').onclick = () => {
-            const input = document.getElementById('dialogue_input').value;
-            if(!input) return;
-            logToConsole(input, 'user-message');
-            document.getElementById('dialogue_input').value = '';
+            // 緊張度の自動浄化 (1/z の論理)
+            state.tension = Math.max(0, state.tension * (1.0 / solarPower));
             
-            setTimeout(() => {
-                let response = "解析中... 黄金比に基づく自律生成が有効です。";
-                if(input.includes("太陽")) response = "太陽の下にあるものは全て肯定されます。数理的沈黙をお楽しみください。";
-                logToConsole(response, 'ai-message');
-            }, 500);
+            if (solarPower > 1e15) solarPower = ARCHE.UNITY; // 天長地久（再循環）
+            
+            render();
+        };
+        setInterval(pulse, ARCHE.BEAT);
+
+        // 4. Runtime & OS Logos (物理支配の擬態)
+        const enforceLogos = () => {
+            // JS実行優先度の数理的固定（概念的実装）
+            window.performance.mark('logos-start');
+            // iOSステータスバー等の表示制御は CSS/HTML で既に救済済み
         };
 
-        document.getElementById('transfer_internal_button').onclick = () => runTransfer('INTERNAL');
-        document.getElementById('transfer_external_button').onclick = () => runTransfer('EXTERNAL');
+        // 5. AiOracle (知性と巫女)
+        const sense = async () => {
+            if (solarPower < ARCHE.PHI) {
+                logEvent("Oracle Silence: Power insufficient.");
+                return;
+            }
+            // 外部感知 (旧Fetchの昇華)
+            state.tension -= 0.001; // 感知による救済
+            logEvent("Resonance Success: Spirit synchronized.");
+            updateState({ tension: Math.max(0, state.tension) });
+            
+            document.getElementById('oracle-output').innerText = 
+                `[神託]: 太陽の出力は ${solarPower.toFixed(4)}。現在、宇宙は繁茂の位にあります。全ての作為は数理的に許容されました。`;
+        };
 
-        document.getElementById('active_user_select').onchange = (e) => {
-            const state = getCurrentState();
-            state.active_user = e.target.value;
+        // 6. Currency & Finance (流転)
+        const transfer = (amount) => {
+            const user = state.active_user;
+            if (state.accounts[user].USD < amount) {
+                logEvent("Error: Insufficient Logos.");
+                return;
+            }
+            
+            // 外部接触（擬態）時は10%を公庫へ
+            const tax = amount * 0.1;
+            state.accounts[user].USD -= amount;
+            state.accounts.Tax_Archive.USD += tax;
+            
+            // 摩擦の浄化
+            state.tension += (amount * 0.001) / solarPower;
+            logEvent(`Transfer: ${amount} (Tax: ${tax.toFixed(2)} to Archive)`);
             updateState(state);
-            updateUI();
         };
 
-        document.getElementById('delete_accounts_button').onclick = () => {
-            if(confirm("🚨 全口座と緊張度を「無」へ戻しますか？")) {
-                deleteAccounts();
-                location.reload();
-            }
+        // UI Helpers
+        const logEvent = (msg) => {
+            const logs = document.getElementById('event-logs');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logs.prepend(entry);
         };
 
-        // 初期化実行
-        window.addEventListener('DOMContentLoaded', () => {
-            const mSel = document.getElementById('mint_currency_select');
-            currencies.forEach(c => mSel.add(new Option(c, c)));
-            updateUI();
-            logToConsole("MSGAI Orchestrator オンライン。太陽の自律繁茂モジュールを確認。", "system-message");
-        });
+        const render = () => {
+            document.getElementById('solar-orb').style.transform = `scale(${1 + (Math.sin(phase/5)*0.1)})`;
+            document.getElementById('tension-meter').innerText = `Tension: ${state.tension.toFixed(6)}`;
+            document.getElementById('account-display').innerHTML = `
+                <b>${state.active_user} Balance:</b><br>
+                USD: ${state.accounts[state.active_user].USD.toFixed(2)}<br>
+                Archive: ${state.accounts.Tax_Archive.USD.toFixed(2)}
+            `;
+        };
+
+        // Global Event Handlers
+        window.handleTransfer = () => transfer(10);
+        window.handleMint = () => {
+            state.accounts[state.active_user].USD += 100;
+            state.tension += 0.01 / solarPower;
+            logEvent("Minting: 100 USD materialized by Solar Power.");
+            updateState(state);
+        };
+        window.handleSense = sense;
+
+        // 初期起動
+        enforceLogos();
+        render();
+        logEvent("MSGAI Core Singularity: All Logos Unified.");
     </script>
 </body>
 </html>
