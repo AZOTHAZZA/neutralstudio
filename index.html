@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>MSGAI - Sovereign V35.5</title>
+    <title>MSGAI - Sovereign V35.6</title>
     <style>
-        /* V32.2 正典デザイン・アニメーションを完全継承 */
         :root { --accent: #007bff; --bg: #f4f7f9; --card-bg: #ffffff; --nav-bg: #000; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: var(--bg); color: #1a1a1a; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         header { background: var(--nav-bg); color: #fff; z-index: 100; flex-shrink: 0; }
@@ -36,7 +35,7 @@
         .history-table { width: 100%; font-size: 0.75em; border-collapse: collapse; }
         .history-table td { padding: 4px 0; border-bottom: 1px solid #f8f9fa; }
 
-        /* 追加機能：外部接続設定エリア */
+        /* 外部接続・自律検索エリア */
         .ext-config { margin-top: 15px; padding: 15px; background: #f1f3f5; border-radius: 12px; border: 1px dashed #adb5bd; }
         .ext-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .ext-label { font-size: 0.8em; font-weight: bold; color: #495057; }
@@ -98,17 +97,12 @@
                 <div class="ext-config">
                     <div class="ext-header">
                         <span class="ext-label">外部接続 [ON/OFF]</span>
-                        <div class="control-group" style="margin-bottom:0; scale:0.8;">
-                            <button class="sw-btn" id="tx_ext_off" onclick="toggleExt('tx', false)">OFF</button>
-                            <button class="sw-btn" id="tx_ext_on" onclick="toggleExt('tx', true)">ON</button>
-                        </div>
+                        <div class="control-group" style="margin-bottom:0; scale:0.8;"><button class="sw-btn" id="tx_ext_off" onclick="toggleExt('tx', false)">OFF</button><button class="sw-btn" id="tx_ext_on" onclick="toggleExt('tx', true)">ON</button></div>
                         <span class="ext-label">自律検索 [S-Search]</span>
-                        <div class="control-group" style="margin-bottom:0; scale:0.8;">
-                            <button class="sw-btn" id="tx_search_off" onclick="toggleSearch('tx', false)">OFF</button>
-                            <button class="sw-btn" id="tx_search_on" onclick="toggleSearch('tx', true)">ON</button>
-                        </div>
+                        <div class="control-group" style="margin-bottom:0; scale:0.8;"><button class="sw-btn" id="tx_search_off" onclick="toggleSearch('tx', false)">OFF</button><button class="sw-btn" id="tx_search_on" onclick="toggleSearch('tx', true)">ON</button></div>
                     </div>
-                    <div class="input-box"><label>接続先URL</label><input type="text" id="tx_ext_url" placeholder="https://..."></div>
+                    <div class="input-box"><label>外部接続先URL</label><input type="text" id="tx_ext_url" placeholder="https://..."></div>
+                    <div class="input-box"><label>外部認証キー</label><input type="password" id="tx_ext_key" placeholder="Auth Key / API Key"></div>
                 </div>
 
                 <button class="action-btn btn-blue" style="margin-top:10px" onclick="runTx()">移動実行</button>
@@ -129,17 +123,12 @@
                 <div class="ext-config" style="margin-bottom:10px;">
                     <div class="ext-header">
                         <span class="ext-label">外部同期 [ON/OFF]</span>
-                        <div class="control-group" style="margin-bottom:0; scale:0.8;">
-                            <button class="sw-btn" id="ai_ext_off" onclick="toggleExt('ai', false)">OFF</button>
-                            <button class="sw-btn" id="ai_ext_on" onclick="toggleExt('ai', true)">ON</button>
-                        </div>
+                        <div class="control-group" style="margin-bottom:0; scale:0.8;"><button class="sw-btn" id="ai_ext_off" onclick="toggleExt('ai', false)">OFF</button><button class="sw-btn" id="ai_ext_on" onclick="toggleExt('ai', true)">ON</button></div>
                         <span class="ext-label">自律取得 [S-Search]</span>
-                        <div class="control-group" style="margin-bottom:0; scale:0.8;">
-                            <button class="sw-btn" id="ai_search_off" onclick="toggleSearch('ai', false)">OFF</button>
-                            <button class="sw-btn" id="ai_search_on" onclick="toggleSearch('ai', true)">ON</button>
-                        </div>
+                        <div class="control-group" style="margin-bottom:0; scale:0.8;"><button class="sw-btn" id="ai_search_off" onclick="toggleSearch('ai', false)">OFF</button><button class="sw-btn" id="ai_search_on" onclick="toggleSearch('ai', true)">ON</button></div>
                     </div>
-                    <div class="input-box"><label>モデルエンドポイント</label><input type="text" id="ai_ext_url" placeholder="https://api.openai.com/v1/chat/completions"></div>
+                    <div class="input-box"><label>外部接続先URL</label><input type="text" id="ai_ext_url" placeholder="https://api.openai.com/v1/chat/completions"></div>
+                    <div class="input-box"><label>外部認証キー</label><input type="password" id="ai_ext_key" placeholder="API Key"></div>
                 </div>
 
                 <div style="display:flex; gap:10px;">
@@ -158,23 +147,18 @@
                     <div class="metric"><div style="font-size:0.7em">Ratio (w=1/z)</div><div class="metric-value" id="w_val">20.00</div></div>
                 </div>
             </div>
-            
             <div class="card"><h2>全口座履歴</h2><table class="history-table" id="acc_hist_full"></table></div>
             <div class="card"><h2>全生成履歴</h2><table class="history-table" id="mint_hist_full"></table></div>
             <div class="card"><h2>全移動履歴</h2><table class="history-table" id="tx_hist_full"></table></div>
             <div class="card"><h2>全AI履歴</h2><table class="history-table" id="ai_hist_full"></table></div>
             <div class="card"><h2>全システム履歴</h2><table class="history-table" id="sys_hist_full"></table></div>
-
-            <div class="card">
-                <h2>システム管理</h2>
-                <button class="action-btn" style="background:#718096;" onclick="fullReset()">システム初期化</button>
-            </div>
+            <div class="card"><h2>システム管理</h2><button class="action-btn" style="background:#718096;" onclick="fullReset()">システム初期化</button></div>
         </section>
     </main>
 
     <script>
         const curs = ["USD", "JPY", "EUR", "BTC", "ETH", "MATIC"];
-        let state = JSON.parse(localStorage.getItem('msgai_v35_5')) || {
+        let state = JSON.parse(localStorage.getItem('msgai_v35_6')) || {
             user: 'User_A', tension: 0.05,
             accounts: { User_A: { USD: 0, JPY: 0, EUR: 0, BTC: 0, ETH: 0, MATIC: 0 }, User_B: { USD: 0, JPY: 0, EUR: 0, BTC: 0, ETH: 0, MATIC: 0 } },
             hist: { acc: [], mint: [], tx: [], ai: [], sys: [] },
@@ -196,10 +180,11 @@
         window.toggleSearch = (type, val) => { state.search[type] = val; if(val) runMobiusSearch(type); update(); };
 
         async function runMobiusSearch(type) {
-            addHist('sys', `${type} 自律探索実行`, "PENDING");
+            addHist('sys', `${type} 自律探索実行`, "SEARCH-ON");
             const foundUrl = type === 'tx' ? "https://api.dex-v3.io/mainnet" : "https://api.arche-llm.ai/v1";
             document.getElementById(`${type}_ext_url`).value = foundUrl;
-            addHist('sys', `${type} 接続先を自律補完`, foundUrl);
+            document.getElementById(`${type}_ext_key`).value = "AUTOGENERATED_KEY_X7";
+            addHist('sys', `${type} 接続情報を特定・補完`, foundUrl);
         }
 
         function addHist(type, desc, amt) {
@@ -230,7 +215,7 @@
                 renderHist(`${t}_hist_short`, state.hist[t], 10);
                 renderHist(`${t}_hist_full`, state.hist[t]);
             });
-            localStorage.setItem('msgai_v35_5', JSON.stringify(state));
+            localStorage.setItem('msgai_v35_6', JSON.stringify(state));
         }
 
         function renderHist(id, data, limit) {
