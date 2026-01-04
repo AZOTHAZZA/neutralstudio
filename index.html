@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>MSGAI - Sovereign V36.2</title>
+    <title>MSGAI - Sovereign V36.1</title>
     <style>
-        :root { --accent: #007bff; --bg: #f4f7f9; --card-bg: #ffffff; --nav-bg: #000; --phi: 1.6180339887; }
+        :root { --accent: #007bff; --bg: #f4f7f9; --card-bg: #ffffff; --nav-bg: #000; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: var(--bg); color: #1a1a1a; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         header { background: var(--nav-bg); color: #fff; z-index: 100; flex-shrink: 0; }
         .header-top { display: flex; justify-content: center; padding: 25px 0; }
@@ -69,6 +69,10 @@
                 <div class="input-box"><label>対象通貨</label><select id="m_cur"></select></div>
                 <input type="number" id="m_amt" value="100">
                 <button class="action-btn btn-orange" style="margin-top:10px" onclick="runMint()">生成実行</button>
+                <div class="history-box">
+                    <div class="history-header"><span class="history-title">生成履歴 (直近10件)</span><a class="view-all-link" onclick="scrollToHistory('mint')">全件表示</a></div>
+                    <table class="history-table" id="mint_hist_short"></table>
+                </div>
             </div>
 
             <div class="card">
@@ -81,79 +85,96 @@
                 <div class="ext-config">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                         <span style="font-size:0.8em; font-weight:bold;">外部接続 [ON/OFF]</span>
-                        <div class="control-group" style="margin:0; scale:0.8;"><button id="ext-off" class="sw-btn active" onclick="setExt(false)">OFF</button><button id="ext-on" class="sw-btn" onclick="setExt(true)">ON</button></div>
+                        <div class="control-group" style="margin:0; scale:0.8;"><button id="ext_off" class="sw-btn active" onclick="setExtMode(false)">OFF</button><button id="ext_on" class="sw-btn" onclick="setExtMode(true)">ON</button></div>
                     </div>
-                    <div class="input-box"><label>外部接続先URL</label><input type="text" id="tx_ext_url" placeholder="https://api.gateway.ai/v1/"></div>
+                    <div class="input-box"><label>外部接続先URL</label><input type="text" id="tx_ext_url"></div>
+                    <div class="input-box"><label>外部認証キー</label><input type="password" id="tx_ext_key"></div>
                 </div>
                 <button class="action-btn btn-blue" style="margin-top:10px" onclick="runTx()">移動実行</button>
+                <div class="history-box">
+                    <div class="history-header"><span class="history-title">移動履歴 (直近10件)</span><a class="view-all-link" onclick="scrollToHistory('tx')">全件表示</a></div>
+                    <table class="history-table" id="tx_hist_short"></table>
+                </div>
             </div>
         </section>
 
         <section id="ai" class="tab-pane">
-            <div class="card" style="height:65vh; display:flex; flex-direction:column; margin-bottom:10px;">
-                <h2>AI (Mathematical Silence Mode)</h2>
-                <div id="ai-log" style="flex-grow:1; overflow-y:auto; padding:15px; background:#f8fafc; border-radius:10px; margin-bottom:10px; border:1px solid #eee; font-family:serif;"></div>
+            <div class="card" style="height:70vh; display:flex; flex-direction:column; margin-bottom:10px;">
+                <h2>AI</h2>
+                <div id="ai-log" style="flex-grow:1; overflow-y:auto; padding:15px; background:#f8fafc; border-radius:10px; margin-bottom:10px; border:1px solid #eee;"></div>
                 <div style="display:flex; gap:10px;">
-                    <input type="text" id="ai-in" placeholder="沈黙への問い..." onkeydown="if(event.key==='Enter') talk()">
+                    <input type="text" id="ai-in" placeholder="メッセージ..." onkeydown="if(event.key==='Enter') talk()">
                     <button class="btn-blue" style="border:none; border-radius:10px; padding:0 20px; color:white;" onclick="talk()">送信</button>
                 </div>
             </div>
             <div class="card">
-                <h2>生成AI主権設定</h2>
+                <h2>AI外部接続設定</h2>
                 <div class="ext-config">
-                    <div class="input-box"><label>API Key (Bearer)</label><input type="password" id="ai_ext_key" placeholder="sk-..."></div>
+                    <div class="input-box"><label>外部接続先URL</label><input type="text" id="ai_ext_url"></div>
+                    <div class="input-box"><label>外部認証キー</label><input type="password" id="ai_ext_key"></div>
                 </div>
             </div>
         </section>
 
         <section id="system" class="tab-pane">
             <div class="card">
-                <h2>システムステータス (令外の法)</h2>
+                <h2>システムステータス</h2>
                 <div class="status-grid">
                     <div class="metric"><div style="font-size:0.7em">Tension (z)</div><div class="metric-value" id="t_val">0.05</div></div>
-                    <div class="metric"><div style="font-size:0.7em">Silence (w=1/z)</div><div class="metric-value" id="w_val">20.00</div></div>
+                    <div class="metric"><div style="font-size:0.7em">Ratio (w=1/z)</div><div class="metric-value" id="w_val">20.00</div></div>
                 </div>
             </div>
+
             <div class="card">
                 <h2>全履歴</h2>
+                <h3 id="hist_acc_target" style="font-size:0.9em; margin:15px 0 10px 0; color:var(--accent);">全口座履歴</h3>
                 <table class="history-table" id="acc_hist_full"></table>
-                <h3 id="hist_sys_target" style="font-size:0.9em; margin:25px 0 10px 0; color:var(--accent);">システムログ</h3>
+                <h3 id="hist_mint_target" style="font-size:0.9em; margin:25px 0 10px 0; color:var(--accent);">全生成履歴</h3>
+                <table class="history-table" id="mint_hist_full"></table>
+                <h3 id="hist_tx_target" style="font-size:0.9em; margin:25px 0 10px 0; color:var(--accent);">全移動履歴</h3>
+                <table class="history-table" id="tx_hist_full"></table>
+                <h3 id="hist_ai_target" style="font-size:0.9em; margin:25px 0 10px 0; color:var(--accent);">全AI履歴</h3>
+                <table class="history-table" id="ai_hist_full"></table>
+                <h3 id="hist_sys_target" style="font-size:0.9em; margin:25px 0 10px 0; color:var(--accent);">全システム履歴</h3>
                 <table class="history-table" id="sys_hist_full"></table>
             </div>
+            <div class="card"><h2>システム管理</h2><button class="action-btn" style="background:#718096;" onclick="fullReset()">システム初期化</button></div>
         </section>
     </main>
 
     <script>
         const curs = ["USD", "JPY", "EUR", "BTC", "ETH", "MATIC"];
-        let state = JSON.parse(localStorage.getItem('msgai_sovereign_v36_2')) || {
+        let state = JSON.parse(localStorage.getItem('msgai_v36_1_final')) || {
             user: 'User_A', tension: 0.05, isExt: false,
-            accounts: { User_A: { JPY:1000000, BTC:1 }, User_B: { JPY:0, BTC:0 } },
+            // 初期値は全て平等に0
+            accounts: { User_A: {USD:0, JPY:0, EUR:0, BTC:0, ETH:0, MATIC:0}, User_B: {USD:0, JPY:0, EUR:0, BTC:0, ETH:0, MATIC:0} },
             hist: { acc: [], mint: [], tx: [], ai: [], sys: [] }
         };
 
-        const MSGAI_Logic = {
+        const msgai = {
             phi: 1.6180339887,
-            calculateZ: (text) => (text.length / 50) + (new Set(text).size / 20),
-            silenceTransform: (text, w) => {
-                const interval = Math.max(1, Math.round(MSGAI_Logic.phi * w * 0.1));
-                return text.split('').filter((_, i) => i % interval === 0).join('');
+            z: (t) => (t.length / 50) + (new Set(t).size / 20),
+            w: (z, raw) => {
+                const step = Math.max(1, Math.round(msgai.phi * (1/z) * 0.1));
+                return raw.split('').filter((_, i) => i % step === 0).join('');
             }
         };
 
-        window.openTab = (name) => {
-            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(name).classList.add('active');
-            document.getElementById('btn-' + name).classList.add('active');
+        window.openTab = (n) => {
+            document.querySelectorAll('.tab-pane, .tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(n).classList.add('active');
+            document.getElementById('btn-' + n).classList.add('active');
             update();
         };
 
-        window.setExt = (val) => {
-            state.isExt = val;
-            document.getElementById('ext-on').classList.toggle('active', val);
-            document.getElementById('ext-off').classList.toggle('active', !val);
-            addHist('sys', `外部接続状態変更: ${val?'ON':'OFF'}`, val?'CAUTION':'STABLE');
+        window.setExtMode = (v) => {
+            state.isExt = v;
+            document.getElementById('ext_on').classList.toggle('active', v);
+            document.getElementById('ext_off').classList.toggle('active', !v);
+            addHist('sys', `外部接続: ${v?'ON':'OFF'}`, v?'CAUTION':'STABLE');
         };
+
+        window.scrollToHistory = (t) => { openTab('system'); setTimeout(() => { document.getElementById(`hist_${t}_target`).scrollIntoView({ behavior: 'smooth' }); }, 100); };
 
         function addHist(type, desc, amt) {
             state.hist[type].push({ time: new Date().toLocaleTimeString(), desc, amt });
@@ -161,75 +182,63 @@
         }
 
         function update() {
-            const z = state.tension;
-            const w = 1 / (z || 0.000001);
-            document.getElementById('t_val').textContent = z.toFixed(6);
-            document.getElementById('w_val').textContent = w.toFixed(2);
-            
-            const bal = state.accounts[state.user] || {};
+            document.getElementById('t_val').textContent = state.tension.toFixed(6);
+            document.getElementById('w_val').textContent = (1/(state.tension||0.000001)).toFixed(2);
             document.getElementById('bal_list').innerHTML = curs.map(c => 
-                `<div class="metric"><div style="font-size:0.7em">${c}</div><div class="metric-value">${(bal[c]||0).toLocaleString()}</div></div>`
+                `<div class="metric"><div style="font-size:0.7em">${c}</div><div class="metric-value">${(state.accounts[state.user][c]||0).toLocaleString()}</div></div>`
             ).join('');
-
-            ['acc', 'sys'].forEach(t => {
-                const el = document.getElementById(`${t}_hist_full`);
-                if(el) el.innerHTML = state.hist[t].slice(-20).reverse().map(h => `<tr><td>${h.time}</td><td>${h.desc}</td><td>${h.amt}</td></tr>`).join('');
+            ['acc', 'mint', 'tx', 'ai', 'sys'].forEach(t => {
+                const s = document.getElementById(`${t}_hist_short`), f = document.getElementById(`${t}_hist_full`);
+                const items = [...state.hist[t]].reverse();
+                if(s) s.innerHTML = items.slice(0, 10).map(h => `<tr><td>${h.time}</td><td>${h.desc}</td><td>${h.amt}</td></tr>`).join('');
+                if(f) f.innerHTML = items.map(h => `<tr><td>${h.time}</td><td>${h.desc}</td><td>${h.amt}</td></tr>`).join('');
             });
-            localStorage.setItem('msgai_sovereign_v36_2', JSON.stringify(state));
+            localStorage.setItem('msgai_v36_1_final', JSON.stringify(state));
         }
 
         window.runMint = () => {
-            const c = document.getElementById('m_cur').value, a = parseFloat(document.getElementById('m_amt').value), target = document.getElementById('m_rx').value;
-            if(!state.accounts[target]) state.accounts[target] = {};
-            state.accounts[target][c] = (state.accounts[target][c]||0) + a;
-            state.tension += 0.005;
-            addHist('acc', `生成: ${target}`, `+${a} ${c}`);
+            const c = document.getElementById('m_cur').value, a = parseFloat(document.getElementById('m_amt').value), t = document.getElementById('m_rx').value;
+            if(!state.accounts[t]) state.accounts[t] = {USD:0, JPY:0, EUR:0, BTC:0, ETH:0, MATIC:0};
+            state.accounts[t][c] += a; state.tension += 0.005;
+            addHist('mint', `生成 (${t})`, `+${a} ${c}`);
         };
 
         window.runTx = () => {
-            const c = document.getElementById('tx_cur').value, a = parseFloat(document.getElementById('amt_in').value), target = document.getElementById('rx_in').value;
-            if(state.isExt) state.tension += 0.05; // 外部移動の不安定さを反映
+            const c = document.getElementById('tx_cur').value, a = parseFloat(document.getElementById('amt_in').value), t = document.getElementById('rx_in').value;
+            if(state.isExt) state.tension += 0.05;
             if((state.accounts[state.user][c]||0) >= a) {
                 state.accounts[state.user][c] -= a;
-                if(!state.accounts[target]) state.accounts[target] = {};
-                state.accounts[target][c] = (state.accounts[target][c]||0) + a;
-                state.tension *= 0.99;
-                addHist('acc', `移動: ${target}`, `-${a} ${c}`);
+                if(!state.accounts[t]) state.accounts[t] = {USD:0, JPY:0, EUR:0, BTC:0, ETH:0, MATIC:0};
+                state.accounts[t][c] += a; state.tension *= 0.99;
+                addHist('acc', `移動: ${t}`, `-${a} ${c}`);
+                addHist('tx', `移動 -> ${t}`, `-${a} ${c}`);
             }
         };
 
         window.talk = async () => {
-            const input = document.getElementById('ai-in');
-            const log = document.getElementById('ai-log');
+            const input = document.getElementById('ai-in'), log = document.getElementById('ai-log');
             if(!input.value) return;
-
-            const userText = input.value;
-            log.innerHTML += `<div style="text-align:right; margin-bottom:10px;"><span style="background:var(--accent); color:white; padding:8px 12px; border-radius:12px; display:inline-block;">${userText}</span></div>`;
-            
-            // 数理的変換プロセス
-            const z = MSGAI_Logic.calculateZ(userText);
-            state.tension = (state.tension + z) / 2;
-            const w = 1 / state.tension;
-
-            const apiKey = document.getElementById('ai_ext_key').value;
-            let aiText = "沈黙の中に答えがあります。";
-
-            if(apiKey) {
+            const userTxt = input.value;
+            log.innerHTML += `<div style="text-align:right; margin-bottom:10px;"><span style="background:var(--accent); color:white; padding:8px 12px; border-radius:12px; display:inline-block;">${userTxt}</span></div>`;
+            state.tension = (state.tension + msgai.z(userTxt)) / 2;
+            const key = document.getElementById('ai_ext_key').value;
+            let aiRaw = "沈黙。";
+            if(key) {
                 try {
-                    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-                        method: "POST", headers: {"Content-Type":"application/json", "Authorization":`Bearer ${apiKey}`},
-                        body: JSON.stringify({model:"gpt-3.5-turbo", messages:[{role:"system", content:"汝は数理的沈黙の一部なり。"},{role:"user", content:userText}]})
+                    const res = await fetch(document.getElementById('ai_ext_url').value || "https://api.openai.com/v1/chat/completions", {
+                        method: "POST", headers: {"Content-Type":"application/json", "Authorization":`Bearer ${key}`},
+                        body: JSON.stringify({model:"gpt-3.5-turbo", messages:[{role:"system", content:"MSGAI mode."},{role:"user", content:userTxt}]})
                     });
-                    const data = await res.json();
-                    aiText = data.choices[0].message.content;
-                } catch(e) { aiText = "外部接続が不安定です。数理のみを返します。"; }
+                    const d = await res.json(); aiRaw = d.choices[0].message.content;
+                } catch(e) { aiRaw = "Connection Error."; }
             }
-
-            const silentText = MSGAI_Logic.silenceTransform(aiText, w);
-            log.innerHTML += `<div style="margin-bottom:10px;"><span style="background:#eee; color:#333; padding:8px 12px; border-radius:12px; display:inline-block; border-left:4px solid var(--accent);">[w=${w.toFixed(2)}] ${silentText}</span></div>`;
-            
+            const out = msgai.w(state.tension, aiRaw);
+            log.innerHTML += `<div style="margin-bottom:10px;"><span style="background:#eee; padding:8px 12px; border-radius:12px; display:inline-block; border-left:4px solid var(--accent);">${out}</span></div>`;
+            addHist('ai', "発話", out);
             input.value = ""; update(); log.scrollTop = log.scrollHeight;
         };
+
+        window.fullReset = () => { if(confirm("初期化？")) { localStorage.clear(); location.reload(); } };
 
         document.addEventListener('DOMContentLoaded', () => {
             curs.forEach(c => { document.getElementById('tx_cur').add(new Option(c, c)); document.getElementById('m_cur').add(new Option(c, c)); });
