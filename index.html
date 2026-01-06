@@ -112,18 +112,8 @@ const BRAND_NAMES = {
     universal: "UNIVERSAL STUDIO"
 };
 const DICTIONARY = {
-    en: { 
-        tab_canvas: "CANVAS", tab_window: "WINDOW", tab_table: "TABLE", tab_book: "RECORD", tab_screen: "SCREEN",
-        title_canvas: "CANVAS", title_colors: "COLORS", title_painting: "SIGNING", title_window: "WINDOW", title_table: "TABLE", title_book: "RECORD", title_screen: "SCREEN", 
-        btn_paint: "PAINT", btn_draw: "SIGN", btn_scan: "PEEK WINDOW", btn_erase: "CLEAN CANVAS", 
-        label_z: "z-colors", label_w: "w-colors", placeholder: "Sign details..." 
-    },
-    jp: { 
-        tab_canvas: "キャンバス", tab_window: "ウィンドウ", tab_table: "作業台", tab_book: "記録", tab_screen: "スクリーン",
-        title_canvas: "キャンバス", title_colors: "絵の具", title_painting: "サイン", title_window: "ウィンドウ", title_table: "作業台", title_book: "記録", title_screen: "スクリーン", 
-        btn_paint: "色を乗せる", btn_draw: "サインする", btn_scan: "ウィンドウからなにかを見る", btn_erase: "キャンバスを綺麗にする", 
-        label_z: "zの色", label_w: "wの色", placeholder: "サインの内容..." 
-    }
+    en: { tab_canvas: "CANVAS", tab_window: "WINDOW", tab_table: "TABLE", tab_book: "RECORD", tab_screen: "SCREEN", title_canvas: "CANVAS", title_colors: "COLORS", title_painting: "SIGNING", title_window: "WINDOW", title_table: "TABLE", title_book: "RECORD", title_screen: "SCREEN", btn_paint: "PAINT", btn_draw: "SIGN", btn_scan: "PEEK WINDOW", btn_erase: "CLEAN CANVAS", label_z: "z-colors", label_w: "w-colors", placeholder: "Sign details..." },
+    jp: { tab_canvas: "キャンバス", tab_window: "ウィンドウ", tab_table: "作業台", tab_book: "記録", tab_screen: "スクリーン", title_canvas: "キャンバス", title_colors: "絵の具", title_painting: "サイン", title_window: "ウィンドウ", title_table: "作業台", title_book: "記録", title_screen: "スクリーン", btn_paint: "色を乗せる", btn_draw: "サインする", btn_scan: "ウィンドウからなにかを見る", btn_erase: "キャンバスを綺麗にする", label_z: "zの色", label_w: "wの色", placeholder: "サインの内容..." }
 };
 
 let studio = JSON.parse(localStorage.getItem('tabula_rasa_v62')) || { tension: 0.05, scenery: Object.fromEntries(COLOR_SYSTEM.map(c => [c, 0])), tone: 'neutral', lang: 'en', chronicles: [] };
@@ -135,7 +125,6 @@ function applyTheme(isManual = false) {
     const root = document.documentElement;
     Object.keys(theme).forEach(key => root.style.setProperty(`--${key}`, theme[key]));
     document.querySelector('.brand').textContent = BRAND_NAMES[studio.tone];
-
     if(isManual && prevTone !== studio.tone) {
         const phaseName = studio.tone.charAt(0).toUpperCase() + studio.tone.slice(1);
         const msg = (studio.lang === 'jp') ? `相（トーン）を ${phaseName} Phase に切り替えました。` : `Tone shifted to ${phaseName} Phase.`;
