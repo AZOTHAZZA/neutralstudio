@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Neutral Studio</title>
+<title>Tabula Rasa</title>
 <style>
 :root { 
     --ratio: 1.618; 
@@ -11,7 +11,9 @@
 }
 body { font-family: 'Inter', 'Noto Sans JP', sans-serif; margin: 0; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: var(--transition); }
 header { background: #000; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); flex-shrink: 0; }
-.brand { font-weight: 800; color: #fff; font-size: 0.85rem; letter-spacing: 0.15em; }
+.brand-group { display: flex; flex-direction: column; }
+.super-title { font-size: 0.55rem; color: var(--accent); letter-spacing: 0.4em; font-weight: 300; line-height: 1; margin-bottom: 4px; }
+.brand { font-weight: 800; color: #fff; font-size: 0.85rem; letter-spacing: 0.15em; line-height: 1; }
 nav { display: flex; background: #000; border-bottom: 1px solid #333; flex-shrink: 0; }
 .tab { flex: 1; padding: 12px; border: none; background: none; color: #666; font-weight: bold; cursor: pointer; font-size: 0.65rem; border-bottom: 2px solid transparent; text-transform: uppercase; }
 .tab.active { color: #fff; border-bottom-color: var(--accent); background: #1a1a1a; }
@@ -34,7 +36,10 @@ input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px sol
 </head>
 <body>
 <header>
-    <div class="brand">NEUTRAL STUDIO</div>
+    <div class="brand-group">
+        <div class="super-title">TABULA RASA</div>
+        <div class="brand">NEUTRAL STUDIO</div>
+    </div>
     <div style="display: flex; align-items: center; gap: 10px;">
         <select id="ui-tone" onchange="applyTheme(true)" style="width:auto; margin:0; font-size:0.65rem; background:#000; color:#fff; border:1px solid #333;">
             <option value="neutral">Neutral Tone</option>
@@ -121,29 +126,21 @@ const DICTIONARY = {
     }
 };
 
-let studio = JSON.parse(localStorage.getItem('neutral_studio_v61')) || { tension: 0.05, scenery: Object.fromEntries(COLOR_SYSTEM.map(c => [c, 0])), tone: 'neutral', lang: 'en', chronicles: [] };
+let studio = JSON.parse(localStorage.getItem('tabula_rasa_v62')) || { tension: 0.05, scenery: Object.fromEntries(COLOR_SYSTEM.map(c => [c, 0])), tone: 'neutral', lang: 'en', chronicles: [] };
 
 function applyTheme(isManual = false) {
     const prevTone = studio.tone;
     studio.tone = document.getElementById('ui-tone').value;
-    
-    // テーマ適用
     const theme = TONES[studio.tone];
     const root = document.documentElement;
     Object.keys(theme).forEach(key => root.style.setProperty(`--${key}`, theme[key]));
-    
-    // ブランド名の動的書き換え
     document.querySelector('.brand').textContent = BRAND_NAMES[studio.tone];
 
-    // 手動切り替え時のみ記録に刻む
     if(isManual && prevTone !== studio.tone) {
         const phaseName = studio.tone.charAt(0).toUpperCase() + studio.tone.slice(1);
-        const msg = (studio.lang === 'jp') ? 
-            `相（トーン）を ${phaseName} Phase に切り替えました。` : 
-            `Tone shifted to ${phaseName} Phase.`;
+        const msg = (studio.lang === 'jp') ? `相（トーン）を ${phaseName} Phase に切り替えました。` : `Tone shifted to ${phaseName} Phase.`;
         writeChronicle(`--- ${msg} ---`);
     }
-    
     save();
 }
 
@@ -165,7 +162,7 @@ function updateUI() {
     document.getElementById('chronicle-box').innerHTML = studio.chronicles.map(c => `<p><i>[${c.t}]</i> ${c.m}</p>`).reverse().join('');
 }
 
-function save() { localStorage.setItem('neutral_studio_v61', JSON.stringify(studio)); }
+function save() { localStorage.setItem('tabula_rasa_v62', JSON.stringify(studio)); }
 
 function paintOnCanvas(){
     const c=document.getElementById('color-choice').value;
