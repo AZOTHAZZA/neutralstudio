@@ -116,17 +116,17 @@ input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px sol
 const COLOR_SYSTEM=["USD","JPY","EUR","BTC","ETH","MATIC"];
 const PHI=1.618;
 
-let studio = JSON.parse(localStorage.getItem('tabula_rasa_v72_fixed')) || { 
+let studio = JSON.parse(localStorage.getItem('tabula_rasa_v72_full')) || { 
     tension: 0.05, scenery: Object.fromEntries(COLOR_SYSTEM.map(c => [c, 0])), lang: 'jp', chronicles: [],
-    gov: { cleaning: 'manual', door: 'manual', canvas: 'manual' }
+    gov: { cleaning: 'manual', door: 'manual', canvas: 'manual', sign: 'manual', table: 'manual', record: 'manual' }
 };
 
 const DICTIONARY = {
-    en: { super_title: "TABULA RASA", tab_canvas: "CANVAS", tab_window: "DOOR", tab_table: "TABLE", tab_book: "RECORD", tab_status: "STATUS", title_canvas: "CANVAS", title_colors: "COLORS", title_clean: "CLEANING", title_painting: "SIGNING", title_window: "DOOR", title_table: "TABLE", title_book: "RECORD", title_status: "STATUS", title_governance: "GOVERNANCE", btn_paint: "PAINT", btn_draw: "SIGN", btn_scan: "DISPATCH PACKET", btn_clean: "CLEAN UP", btn_apply_gov: "SET MODE", label_z: "z-colors", label_w: "w-colors", label_target: "Target", label_mode: "Mode", placeholder: "Sign details...", door_idle: "Status: IDLE", modes: { manual: "Manual (I do)", automatic: "Automatic (System do)", autonomous: "Autonomous (Entrust)" }, targets: { canvas:"Canvas", cleaning:"Cleaning", door:"Door" } },
-    jp: { super_title: "タブラ・ラサ", tab_canvas: "キャンバス", tab_window: "ドア", tab_table: "作業台", tab_book: "記録", tab_status: "状態", title_canvas: "キャンバス", title_colors: "絵の具", title_clean: "掃除", title_painting: "サイン", title_window: "ドア/外部射出", title_table: "作業台", title_book: "記録", title_status: "状態", title_governance: "統治", btn_paint: "色を乗せる", btn_draw: "サインする", btn_scan: "パケットを射出", btn_clean: "綺麗にする", btn_apply_gov: "設定する", label_z: "zの色", label_w: "wの色", label_target: "対象", label_mode: "様式", placeholder: "サインの内容...", door_idle: "状態: 待機中", modes: { manual: "手動 (自分でやる)", automatic: "自動 (やってもらう)", autonomous: "自律 (まかせる)" }, targets: { canvas:"キャンバス", cleaning:"掃除", door:"ドア" } }
+    en: { super_title: "TABULA RASA", tab_canvas: "CANVAS", tab_window: "DOOR", tab_table: "TABLE", tab_book: "RECORD", tab_status: "STATUS", title_canvas: "CANVAS", title_colors: "COLORS", title_clean: "CLEANING", title_painting: "SIGNING", title_window: "DOOR", title_table: "TABLE", title_book: "RECORD", title_status: "STATUS", title_governance: "GOVERNANCE", btn_paint: "PAINT", btn_draw: "SIGN", btn_scan: "DISPATCH PACKET", btn_clean: "CLEAN UP", btn_apply_gov: "SET MODE", label_z: "z-colors", label_w: "w-colors", label_target: "Target", label_mode: "Mode", placeholder: "Sign details...", door_idle: "Status: IDLE", modes: { manual: "Manual", automatic: "Automatic", autonomous: "Autonomous" }, targets: { canvas:"Canvas", cleaning:"Cleaning", sign:"Sign", door:"Door", table:"Table", record:"Record", status:"Status", studio:"Studio" } },
+    jp: { super_title: "タブラ・ラサ", tab_canvas: "キャンバス", tab_window: "ドア", tab_table: "作業台", tab_book: "記録", tab_status: "状態", title_canvas: "キャンバス", title_colors: "絵の具", title_clean: "掃除", title_painting: "サイン", title_window: "ドア/外部射出", title_table: "作業台", title_book: "記録", title_status: "状態", title_governance: "統治", btn_paint: "色を乗せる", btn_draw: "サインする", btn_scan: "パケットを射出", btn_clean: "綺麗にする", btn_apply_gov: "設定する", label_z: "zの色", label_w: "wの色", label_target: "対象", label_mode: "様式", placeholder: "サインの内容...", door_idle: "状態: 待機中", modes: { manual: "手動 (自分でやる)", automatic: "自動 (やってもらう)", autonomous: "自律 (まかせる)" }, targets: { canvas:"キャンバス", cleaning:"掃除", sign:"サイン", door:"ドア", table:"作業台", record:"記録", status:"状態", studio:"スタジオ" } }
 };
 
-function save() { localStorage.setItem('tabula_rasa_v72_fixed', JSON.stringify(studio)); }
+function save() { localStorage.setItem('tabula_rasa_v72_full', JSON.stringify(studio)); }
 
 function updateLabels() {
     studio.lang = document.getElementById('ui-lang').value;
@@ -136,8 +136,8 @@ function updateLabels() {
         if(d[k]) el.textContent = d[k];
     });
     updateSelect('color-choice', Object.fromEntries(COLOR_SYSTEM.map(c=>[c,c])), "USD");
-    updateSelect('clean-target', d.targets, "canvas");
-    updateSelect('gov-target', d.targets, "door");
+    updateSelect('clean-target', d.targets, "studio");
+    updateSelect('gov-target', d.targets, "canvas");
     updateSelect('gov-mode', d.modes, "manual");
     document.getElementById('door-status').textContent = d.door_idle;
     updateUI();
@@ -204,8 +204,15 @@ function applyGovernance() {
 
 function executeClean() {
     const target = document.getElementById('clean-target').value;
-    if(!confirm(`Clean ${target}?`)) return;
+    const d = DICTIONARY[studio.lang];
+    if(!confirm(`${d.targets[target]}を掃除しますか？`)) return;
+    
+    if(target === 'studio' || target === 'status') { localStorage.clear(); location.reload(); return; }
     if(target === 'canvas') studio.scenery = Object.fromEntries(COLOR_SYSTEM.map(c => [c, 0]));
+    if(target === 'record') studio.chronicles = [];
+    if(target === 'sign') document.getElementById('subject-node').value = '';
+    if(target === 'table') document.getElementById('console').innerHTML = '';
+    
     writeChronicle(`Cleaned: ${target}`);
     save(); updateUI();
 }
