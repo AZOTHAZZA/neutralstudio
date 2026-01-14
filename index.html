@@ -26,18 +26,20 @@ input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px sol
 .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.75rem; transition: 0.2s; outline: none; margin-top: 5px;}
 .btn-neutral { background: var(--accent); color: #fff; }
 .btn-danger { background: #a71d2a; color: #fff; }
-#console { background: #000; color: #adbac7; padding: 12px; font-family: monospace; font-size: 0.7rem; height: 150px; overflow-y: auto; border-radius: 6px; border: 1px solid var(--border); }
-#chronicle-box { background: rgba(0,0,0,0.3); color: var(--text); padding: 15px; font-family: 'Georgia', serif; font-size: 0.85rem; height: 300px; overflow-y: auto; border-radius: 6px; border: 1px solid var(--border); line-height: 1.6; }
 </style>
 </head>
 <body>
 <header>
     <div class="brand-group">
         <div class="super-title" data-key="super_title">TABULA RASA</div>
-        <div class="brand" id="brand-display"></div>
+        <div class="brand" id="brand-display">PURE STUDIO</div>
     </div>
     <div style="display: flex; align-items: center; gap: 10px;">
-        <select id="ui-tone" onchange="applyTheme(true)" style="width:auto; margin:0; font-size:0.65rem; background:#000; color:#fff; border:1px solid #333;"></select>
+        <select id="ui-tone" onchange="applyTheme()" style="width:auto; margin:0; font-size:0.65rem; background:#000; color:#fff; border:1px solid #333;">
+            <option value="neutral">Neutral Tone</option>
+            <option value="logical">Logical Tone</option>
+            <option value="universal">Universal Tone</option>
+        </select>
         <select id="ui-lang" onchange="updateLabels()" style="width:auto; margin:0; font-size:0.65rem; background:#000; color:#fff; border:1px solid #333;">
             <option value="en">English</option>
             <option value="jp" selected>日本語</option>
@@ -45,43 +47,44 @@ input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px sol
     </div>
 </header>
 <nav id="main-nav">
-    <button class="tab active" id="btn-canvas" onclick="showPane('canvas')" data-key="tab_canvas"></button>
-    <button class="tab" id="btn-window" onclick="showPane('window')" data-key="tab_window"></button>
-    <button class="tab" id="btn-table" onclick="showPane('table')" data-key="tab_table"></button>
-    <button class="tab" id="btn-book" onclick="showPane('book')" data-key="tab_book"></button>
-    <button class="tab" id="btn-status" onclick="showPane('status')" data-key="tab_status"></button>
+    <button class="tab active" onclick="showPane('canvas')" data-key="tab_canvas">CANVAS</button>
+    <button class="tab" onclick="showPane('status')" data-key="tab_status">STATUS</button>
 </nav>
 <main id="viewport">
     <section id="pane-canvas" class="pane active">
-        <div class="card"><div class="card-title" data-key="title_canvas"></div><div class="grid" id="scenery-display"></div></div>
+        <div class="card"><div class="card-title" data-key="title_canvas">CANVAS</div><div class="grid" id="scenery-display"></div></div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
             <div class="card">
-                <div class="card-title" data-key="title_colors"></div>
+                <div class="card-title" data-key="title_colors">GENERATION</div>
                 <select id="color-choice"></select>
-                <div class="label" data-key="label_intensity"></div>
+                <div class="label" data-key="label_intensity">Intensity</div>
                 <input type="number" id="brush-intensity" value="100">
                 <div style="display: flex; gap: 5px;">
-                    <button class="btn btn-neutral" data-key="btn_paint_plus" onclick="paintOnCanvas(1)"></button>
-                    <button class="btn btn-danger" data-key="btn_paint_minus" onclick="paintOnCanvas(-1)"></button>
+                    <button class="btn btn-neutral" data-key="btn_paint_plus" onclick="paintOnCanvas(1)">+</button>
+                    <button class="btn btn-danger" data-key="btn_paint_minus" onclick="paintOnCanvas(-1)">-</button>
                 </div>
             </div>
             <div class="card">
-                <div class="card-title" data-key="title_painting"></div>
-                <input type="text" id="subject-node" placeholder=""><button class="btn btn-neutral" data-key="btn_draw" onclick="drawLayer()"></button>
+                <div class="card-title" data-key="title_painting">SIGN</div>
+                <input type="text" id="subject-node" placeholder="Sign..."><button class="btn btn-neutral" data-key="btn_draw" onclick="drawLayer()">Sign</button>
             </div>
         </div>
     </section>
 
     <section id="pane-status" class="pane">
         <div class="card">
-            <div class="card-title" data-key="title_status"></div>
+            <div class="card-title" data-key="title_status">PHASE STATUS</div>
             <div class="grid">
-                <div class="data-node"><div class="label" data-key="label_z"></div><div class="value" id="z-val">0</div></div>
-                <div class="data-node"><div class="label" data-key="label_w"></div><div class="value" id="w-val">0</div></div>
+                <div class="data-node"><div class="label" data-key="label_z">zの色</div><div class="value" id="z-val">0</div></div>
+                <div class="data-node"><div class="label" data-key="label_w">wの色</div><div class="value" id="w-val">0</div></div>
             </div>
         </div>
-        </section>
-    </main>
+        <div class="card">
+            <div class="card-title">CLEAN UP</div>
+            <button class="btn btn-danger" onclick="executeClean()">Reset Studio</button>
+        </div>
+    </section>
+</main>
 
 <script>
 const COLOR_SYSTEM=["PURE","USD","JPY","EUR","BTC","ETH","MATIC"];
@@ -94,70 +97,100 @@ const TONES = {
 
 const DICTIONARY = {
     en: { 
-        super_title: "TABULA RASA", tab_canvas: "CANVAS", tab_window: "DOOR", tab_table: "TABLE", tab_book: "RECORD", tab_status: "STATUS", 
-        title_canvas: "CANVAS", title_colors: "PURE GENERATION", label_z: "z-colors", label_w: "w-colors",
+        super_title: "TABULA RASA", tab_canvas: "CANVAS", tab_status: "STATUS", 
+        title_canvas: "SCENERY", title_colors: "PURE GENERATION", label_z: "z-colors", label_w: "w-colors",
         btn_paint_plus: "INCREASE (+)", btn_paint_minus: "DECREASE (-)", label_intensity: "Quantity",
-        brands: { neutral: "NEUTRAL STUDIO", logical: "LOGICAL STUDIO", universal: "UNIVERSAL STUDIO" }
-        // ... 他のキーも同様に定義
+        title_painting: "SIGNATURE", btn_draw: "SIGN", title_status: "EXISTENCE STATUS"
     },
     jp: { 
-        super_title: "タブラ・ラサ", tab_canvas: "キャンバス", tab_window: "ドア", tab_table: "作業台", tab_book: "記録", tab_status: "状態", 
-        title_canvas: "キャンバス", title_colors: "数値生成", label_z: "zの色", label_w: "wの色",
+        super_title: "タブラ・ラサ", tab_canvas: "キャンバス", tab_status: "状態", 
+        title_canvas: "景色", title_colors: "数値生成", label_z: "zの色", label_w: "wの色",
         btn_paint_plus: "増加 (+)", btn_paint_minus: "減少 (-)", label_intensity: "数量",
-        brands: { neutral: "ニュートラル・スタジオ", logical: "ロジカル・スタジオ", universal: "ユニバーサル・スタジオ" }
-        // ... 他のキーも同様に定義
+        title_painting: "サイン", btn_draw: "署名する", title_status: "実在の状態"
     }
 };
 
 let studio = { 
-    tension: 0.05, scenery: Object.fromEntries(COLOR_SYSTEM.map(c => [c, 0])), tone: 'neutral', lang: 'jp', chronicles: [],
-    gov: { cleaning: 'manual', door: 'manual', canvas: 'manual', sign: 'manual', table: 'manual', record: 'manual' }
+    tension: 0.05, scenery: Object.fromEntries(COLOR_SYSTEM.map(c => [c, 0])), tone: 'neutral', lang: 'jp'
 };
 
-// メビウス変換ブリッジ（マイナスを回避し、0と無限を繋ぐ）
 function calculateMobius(z) {
     const a = 1, b = PHI, c = 1, d = -PHI;
-    // 分母が0になる付近（d = -PHIなので z = PHI付近）を特異点として処理
-    if (Math.abs(c * z + d) < 0.0001) return 999.999;
-    return Math.abs((a * z + b) / (c * z + d)); // 実在論に基づき絶対値（非負）を返す
+    const denominator = c * z + d;
+    if (Math.abs(denominator) < 0.0001) return 999.999;
+    return Math.abs((a * z + b) / denominator);
 }
 
 function save() { localStorage.setItem('tabula_rasa_v74_pure', JSON.stringify(studio)); }
 
 function updateUI() {
     const mz = calculateMobius(studio.tension);
-    // 「zの色」と「wの色」として表示
     document.getElementById('z-val').textContent = mz.toFixed(6);
     document.getElementById('w-val').textContent = (1 / (mz || 0.001)).toFixed(6);
-    
     document.getElementById('scenery-display').innerHTML = COLOR_SYSTEM.map(c => `
         <div class="data-node">
             <div class="label">${c}</div>
-            <div class="value">${(studio.scenery[c]||0).toLocaleString(undefined, {minimumFractionDigits: 4})}</div>
+            <div class="value">${(studio.scenery[c]||0).toFixed(4)}</div>
         </div>`).join('');
+}
+
+function updateLabels() {
+    studio.lang = document.getElementById('ui-lang').value;
+    const d = DICTIONARY[studio.lang];
+    document.querySelectorAll('[data-key]').forEach(el => {
+        const k = el.getAttribute('data-key');
+        if(d[k]) el.textContent = d[k];
+    });
+    // Selectボックスの更新
+    const sel = document.getElementById('color-choice');
+    sel.innerHTML = '';
+    COLOR_SYSTEM.forEach(c => sel.add(new Option(c, c)));
+    updateUI();
+}
+
+function applyTheme() {
+    studio.tone = document.getElementById('ui-tone').value;
+    const theme = TONES[studio.tone];
+    const root = document.documentElement;
+    Object.keys(theme).forEach(key => root.style.setProperty(`--${key}`, theme[key]));
+    save();
 }
 
 function paintOnCanvas(sign){
     const c = document.getElementById('color-choice').value;
     const v = Math.abs(parseFloat(document.getElementById('brush-intensity').value));
-    
     if (!isNaN(v)) {
         const oldVal = studio.scenery[c] || 0;
-        // 🚀 絶対に0を下回らない制約
         studio.scenery[c] = Math.max(0, oldVal + (v * sign));
-        
         const actualChange = studio.scenery[c] - oldVal;
-        // テンション（数そのものの位相）も非負の領域で循環させる
         studio.tension = Math.abs((studio.tension + (actualChange / 1000)) % (PHI * 2));
-        
         save(); updateUI();
     }
 }
-// --- 初期化等の関数は以前のものを継承 ---
+
+function showPane(id) {
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('pane-' + id).classList.add('active');
+    event.currentTarget.classList.add('active');
+}
+
+function executeClean() {
+    if(!confirm("Reset everything?")) return;
+    studio.scenery = Object.fromEntries(COLOR_SYSTEM.map(c => [c, 0]));
+    studio.tension = 0.05;
+    save(); updateUI();
+}
+
+function drawLayer() { alert("Signed: " + document.getElementById('subject-node').value); }
+
 document.addEventListener('DOMContentLoaded', () => { 
     const saved = localStorage.getItem('tabula_rasa_v74_pure');
     if(saved) studio = JSON.parse(saved);
-    updateLabels(); 
+    document.getElementById('ui-lang').value = studio.lang;
+    document.getElementById('ui-tone').value = studio.tone;
+    updateLabels();
+    applyTheme();
 });
 </script>
 </body>
